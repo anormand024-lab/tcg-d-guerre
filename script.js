@@ -1,6 +1,5 @@
-
 // =====================
-// CARDS DATABASE
+// CARDS DB
 // =====================
 
 let cardsDB = [
@@ -10,37 +9,36 @@ let cardsDB = [
 
   { id: 4, name: "Aquos", rarity: 2 },
   { id: 5, name: "Pyron", rarity: 2 },
-  { id: 6, name: "Florania", rarity: 2 },
 
-  { id: 7, name: "Voltair", rarity: 3 },
-  { id: 8, name: "Froston", rarity: 3 },
+  { id: 6, name: "Voltair", rarity: 3 },
+  { id: 7, name: "Froston", rarity: 3 },
 
-  { id: 9, name: "Shadowrex", rarity: 4 },
-  { id: 10, name: "Lumina", rarity: 4 },
+  { id: 8, name: "Shadowrex", rarity: 4 },
 
-  { id: 11, name: "Umbrix", rarity: 5 },
-  { id: 12, name: "Dracora EX", rarity: 6 }
+  { id: 9, name: "Umbrix", rarity: 5 },
+
+  { id: 10, name: "Dracora EX", rarity: 6 }
 ];
 
 // =====================
-// DROP RATES
+// DROP RATE
 // =====================
 
-const rarityRates = [
-  { rarity: 1, chance: 45 },
-  { rarity: 2, chance: 25 },
-  { rarity: 3, chance: 15 },
-  { rarity: 4, chance: 10 },
-  { rarity: 5, chance: 4 },
-  { rarity: 6, chance: 1 }
+const rates = [
+  { r: 1, c: 45 },
+  { r: 2, c: 25 },
+  { r: 3, c: 15 },
+  { r: 4, c: 10 },
+  { r: 5, c: 4 },
+  { r: 6, c: 1 }
 ];
 
 // =====================
 // STORAGE
 // =====================
 
-let collectionData =
-  JSON.parse(localStorage.getItem("collectionData")) || {};
+let data =
+  JSON.parse(localStorage.getItem("collection")) || {};
 
 let lastOpen =
   Number(localStorage.getItem("lastOpen")) || 0;
@@ -49,27 +47,25 @@ let lastOpen =
 // TABS
 // =====================
 
-function showTab(tab) {
+function showTab(t) {
   document.querySelectorAll(".tab")
-    .forEach(t => t.classList.remove("active"));
+    .forEach(x => x.classList.remove("active"));
 
-  document.getElementById(tab)
-    .classList.add("active");
+  document.getElementById(t).classList.add("active");
 }
 
 // =====================
 // RANDOM CARD
 // =====================
 
-function getRandomCard() {
-
-  let rand = Math.random() * 100;
+function getCard() {
+  let x = Math.random() * 100;
   let sum = 0;
 
-  for (let r of rarityRates) {
-    sum += r.chance;
-    if (rand <= sum) {
-      let pool = cardsDB.filter(c => c.rarity === r.rarity);
+  for (let i of rates) {
+    sum += i.c;
+    if (x <= sum) {
+      let pool = cardsDB.filter(c => c.rarity === i.r);
       return pool[Math.floor(Math.random() * pool.length)];
     }
   }
@@ -85,7 +81,7 @@ function openBooster() {
 
   if (now - lastOpen < 40000) {
     document.getElementById("cooldown").innerText =
-      "Cooldown : " + Math.ceil((40000 - (now - lastOpen))/1000) + "s";
+      "Cooldown " + Math.ceil((40000 - (now - lastOpen))/1000) + "s";
     return;
   }
 
@@ -96,29 +92,31 @@ function openBooster() {
   btn.classList.add("booster-open");
   setTimeout(() => btn.classList.remove("booster-open"), 500);
 
+  let container = document.getElementById("boosterResult");
+  container.innerHTML = "";
+
   let pack = [];
-  document.getElementById("boosterResult").innerHTML = "";
 
   for (let i = 0; i < 6; i++) {
 
-    let card = getRandomCard();
+    let card = getCard();
     pack.push(card);
 
-    if (!collectionData[card.id]) {
-      collectionData[card.id] = { discovered: true, copies: 1 };
+    if (!data[card.id]) {
+      data[card.id] = { copies: 1 };
     } else {
-      collectionData[card.id].copies++;
+      data[card.id].copies++;
     }
   }
 
-  localStorage.setItem("collectionData", JSON.stringify(collectionData));
+  localStorage.setItem("collection", JSON.stringify(data));
 
   renderBooster(pack);
   renderCollection();
 }
 
 // =====================
-// BOOSTER DISPLAY
+// BOOSTER ANIMATION (IMPORTANT)
 // =====================
 
 function renderBooster(pack) {
@@ -129,27 +127,25 @@ function renderBooster(pack) {
 
     setTimeout(() => {
 
-      let card = document.createElement("div");
-      card.className = "card";
+      let el = document.createElement("div");
+      el.className = "card";
 
-      if (c.rarity === 6) card.classList.add("holo");
+      // HOLO
+      if (c.rarity === 6) el.classList.add("holo");
 
-      let data = collectionData[c.id];
-      let isNew = data.copies === 1;
+      let isNew = data[c.id].copies === 1;
 
-      let img = localStorage.getItem("img_" + c.id);
-
-      card.innerHTML = `
+      el.innerHTML = `
         ${isNew ? "<b style='color:lime'>NEW</b>" : ""}
-        ${img ? `<img src="${img}">` : ""}
         <p><b>${c.name}</b></p>
         <p>⭐ ${c.rarity}</p>
-        <p>x${data.copies}</p>
+        <p>x${data[c.id].copies}</p>
       `;
 
-      div.appendChild(card);
+      div.appendChild(el);
 
-    }, i * 250);
+    }, i * 250); // IMPORTANT animation timing
+
   });
 }
 
@@ -162,60 +158,36 @@ function renderCollection() {
   let div = document.getElementById("collectionList");
   div.innerHTML = "";
 
-  let count = 0;
-
-  cardsDB.forEach(c => {
-    if (collectionData[c.id]) count++;
-  });
+  let count = Object.keys(data).length;
 
   let header = document.createElement("div");
   header.innerHTML = `📚 ${count}/${cardsDB.length}`;
   header.style.textAlign = "center";
-  header.style.fontSize = "18px";
   header.style.marginBottom = "10px";
 
   div.appendChild(header);
 
   cardsDB.forEach(c => {
 
-    let data = collectionData[c.id];
+    let d = data[c.id];
 
-    let card = document.createElement("div");
-    card.className = "card";
+    let el = document.createElement("div");
+    el.className = "card";
 
-    if (c.rarity === 6 && data) card.classList.add("holo");
+    if (c.rarity === 6 && d) el.classList.add("holo");
 
-    if (!data) {
-      card.innerHTML = "❓ Unknown";
+    if (!d) {
+      el.innerHTML = "❓ Unknown";
     } else {
-      card.innerHTML = `
+      el.innerHTML = `
         <p><b>${c.name}</b></p>
         <p>⭐ ${c.rarity}</p>
-        <p>x${data.copies}</p>
+        <p>x${d.copies}</p>
       `;
     }
 
-    div.appendChild(card);
+    div.appendChild(el);
   });
-}
-
-// =====================
-// ADMIN IMAGE
-// =====================
-
-function uploadImage() {
-
-  let id = document.getElementById("cardIdInput").value;
-  let file = document.getElementById("imgInput").files[0];
-
-  let reader = new FileReader();
-
-  reader.onload = e => {
-    localStorage.setItem("img_" + id, e.target.result);
-    renderCollection();
-  };
-
-  reader.readAsDataURL(file);
 }
 
 // =====================
