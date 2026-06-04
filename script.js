@@ -1,4 +1,3 @@
-
 // =====================
 // DATABASE CARTES
 // =====================
@@ -48,8 +47,8 @@ const rarityRates = [
 // STORAGE
 // =====================
 
-let collection =
-  JSON.parse(localStorage.getItem("collection")) || [];
+let collectionData =
+  JSON.parse(localStorage.getItem("collectionData")) || {};
 
 let lastOpen =
   Number(localStorage.getItem("lastOpen")) || 0;
@@ -70,7 +69,7 @@ function showTab(tab) {
 }
 
 // =====================
-// RANDOM CARD WITH DROP RATE
+// RANDOM CARD
 // =====================
 
 function getRandomCard() {
@@ -78,6 +77,7 @@ function getRandomCard() {
   let rand = Math.random() * 100;
 
   let cumulative = 0;
+
   let selectedRarity = 1;
 
   for (let rate of rarityRates) {
@@ -85,7 +85,9 @@ function getRandomCard() {
     cumulative += rate.chance;
 
     if (rand <= cumulative) {
+
       selectedRarity = rate.rarity;
+
       break;
     }
   }
@@ -120,7 +122,11 @@ function openBooster() {
 
   // save timer
   lastOpen = now;
-  localStorage.setItem("lastOpen", lastOpen);
+
+  localStorage.setItem(
+    "lastOpen",
+    lastOpen
+  );
 
   // bouton animation
   let btn =
@@ -129,13 +135,15 @@ function openBooster() {
   btn.classList.add("booster-open");
 
   setTimeout(() => {
+
     btn.classList.remove("booster-open");
+
   }, 600);
 
-  // clear ancien booster
+  // reset booster
   document.getElementById("boosterResult").innerHTML = "";
 
-  // génération cartes
+  // génération pack
   let pack = [];
 
   for (let i = 0; i < 6; i++) {
@@ -143,22 +151,35 @@ function openBooster() {
     let card = getRandomCard();
 
     pack.push(card);
-    collection.push(card);
+
+    // =====================
+    // COLLECTION SYSTEM
+    // =====================
+
+    if (!collectionData[card.id]) {
+
+      collectionData[card.id] = {
+        discovered: true,
+        copies: 1
+      };
+
+    } else {
+
+      collectionData[card.id].copies++;
+    }
   }
 
   // save collection
   localStorage.setItem(
-    "collection",
-    JSON.stringify(collection)
+    "collectionData",
+    JSON.stringify(collectionData)
   );
 
-  // animations
+  // render
   renderBoosterAnimated(pack);
 
-  // refresh collection
   renderCollection();
 
-  // cooldown
   startCooldown();
 }
 
@@ -182,7 +203,7 @@ function renderBoosterAnimated(pack) {
 
       card.className = "card";
 
-      // glow rare
+      // glow rares
       if (c.rarity >= 5) {
 
         card.style.boxShadow =
@@ -196,10 +217,30 @@ function renderBoosterAnimated(pack) {
       let img =
         localStorage.getItem("img_" + c.id);
 
+      // NEW CARD
+      let isNew =
+        collectionData[c.id].copies === 1;
+
       card.innerHTML = `
 
+        ${isNew ? `
+          <div style="
+            background:lime;
+            color:black;
+            font-weight:bold;
+            padding:4px 8px;
+            border-radius:8px;
+            margin-bottom:6px;
+          ">
+            NEW
+          </div>
+        ` : ""}
+
         ${img ?
-          `<img src="${img}" style="width:100%; border-radius:12px;">`
+          `<img src="${img}" style="
+            width:100%;
+            border-radius:12px;
+          ">`
           : ""
         }
 
@@ -214,11 +255,12 @@ function renderBoosterAnimated(pack) {
       container.appendChild(card);
 
     }, index * 300);
+
   });
 }
 
 // =====================
-// COLLECTION
+// COLLECTION DISPLAY
 // =====================
 
 function renderCollection() {
@@ -230,18 +272,50 @@ function renderCollection() {
 
   div.innerHTML = "";
 
-  collection.forEach((c, index) => {
+  // progression
+  let discoveredCount = 0;
 
-    let img =
-      localStorage.getItem("img_" + c.id);
+  // header progression
+  let progress =
+    document.createElement("div");
+
+  progress.style.marginBottom = "20px";
+  progress.style.fontWeight = "bold";
+  progress.style.fontSize = "20px";
+  progress.style.textAlign = "center";
+
+  cardsDB.forEach(cardData => {
+
+    let saved =
+      collectionData[cardData.id];
+
+    let discovered =
+      saved?.discovered || false;
+
+    if (discovered) discoveredCount++;
+  });
+
+  progress.innerHTML =
+    `📚 Collection : ${discoveredCount}/${cardsDB.length}`;
+
+  div.appendChild(progress);
+
+  // cartes
+  cardsDB.forEach(cardData => {
+
+    let saved =
+      collectionData[cardData.id];
+
+    let discovered =
+      saved?.discovered || false;
 
     let card =
       document.createElement("div");
 
     card.className = "card";
 
-    // glow rare
-    if (c.rarity >= 5) {
+    // rares glow
+    if (cardData.rarity >= 5 && discovered) {
 
       card.style.boxShadow =
         "0 0 20px gold";
@@ -250,27 +324,69 @@ function renderCollection() {
         "2px solid gold";
     }
 
-    card.innerHTML = `
+    let img =
+      localStorage.getItem("img_" + cardData.id);
 
-      ${img ?
-        `<img src="${img}" style="width:100%; border-radius:12px;">`
-        : ""
-      }
+    // =====================
+    // UNKNOWN CARD
+    // =====================
 
-      ${getRarityBadge(c.rarity)}
+    if (!discovered) {
 
-      <p><b>${c.name}</b></p>
+      card.innerHTML = `
 
-      <p>ID : ${c.id}</p>
+        <div style="
+          height:140px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:60px;
+          opacity:0.4;
+        ">
+          ?
+        </div>
 
-    `;
+        <p><b>Carte inconnue</b></p>
+
+        <p>???</p>
+
+      `;
+
+    } else {
+
+      // =====================
+      // DISCOVERED CARD
+      // =====================
+
+      card.innerHTML = `
+
+        ${img ?
+          `<img src="${img}" style="
+            width:100%;
+            border-radius:12px;
+          ">`
+          : ""
+        }
+
+        ${getRarityBadge(cardData.rarity)}
+
+        <p><b>${cardData.name}</b></p>
+
+        <p>ID : ${cardData.id}</p>
+
+        <p>
+          🔁 x${saved.copies}
+        </p>
+
+      `;
+    }
 
     div.appendChild(card);
   });
 }
 
 // =====================
-// COOLDOWN DISPLAY
+// COOLDOWN
 // =====================
 
 function startCooldown() {
@@ -286,7 +402,9 @@ function startCooldown() {
       document.getElementById("cooldown");
 
     if (!text) {
+
       clearInterval(interval);
+
       return;
     }
 
@@ -383,4 +501,5 @@ function getRarityBadge(r) {
 // =====================
 
 renderCollection();
+
 startCooldown();
