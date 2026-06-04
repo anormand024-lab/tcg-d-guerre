@@ -1,21 +1,10 @@
 
-// =====================================================
-// SUPABASE INIT
-// =====================================================
-
 const SUPABASE_URL = "TON_URL";
 const SUPABASE_KEY = "TON_KEY";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// =====================================================
-// GAME STATE
-// =====================================================
-
-let gameReady = false;
-
 let userId = localStorage.getItem("userId");
-
 if (!userId) {
   userId = crypto.randomUUID();
   localStorage.setItem("userId", userId);
@@ -23,13 +12,12 @@ if (!userId) {
 
 let collection = {};
 let images = {};
+let gameReady = false;
 
 let lastOpen = 0;
 const COOLDOWN = 40000;
 
-// =====================================================
-// CARD DATABASE
-// =====================================================
+// ================= CARDS =================
 
 let cardsDB = [
   { id: 1, name: "Flamior", rarity: 1 },
@@ -37,54 +25,39 @@ let cardsDB = [
   { id: 3, name: "Rocky", rarity: 1 },
   { id: 4, name: "Aquos", rarity: 2 },
   { id: 5, name: "Pyron", rarity: 2 },
-  { id: 6, name: "Florania", rarity: 2 },
-  { id: 7, name: "Voltair", rarity: 3 },
-  { id: 8, name: "Froston", rarity: 3 },
-  { id: 9, name: "Shadowrex", rarity: 4 },
-  { id: 10, name: "Umbrix", rarity: 5 },
-  { id: 11, name: "Dracora EX", rarity: 6 }
+  { id: 6, name: "Voltair", rarity: 3 },
+  { id: 7, name: "Froston", rarity: 3 },
+  { id: 8, name: "Umbrix", rarity: 5 },
+  { id: 9, name: "Dracora EX", rarity: 6 }
 ];
 
-// =====================================================
-// SAFE INIT LOAD
-// =====================================================
+// ================= INIT =================
 
 async function initGame() {
-
   await loadCollection();
   loadImages();
-
   gameReady = true;
 
   renderCollection();
-  startCooldownLoop();
+  startCooldown();
 }
 
-// =====================================================
-// SUPABASE LOAD SAFE
-// =====================================================
+// ================= SAFE LOAD =================
 
 async function loadCollection() {
 
-  let { data, error } = await client
+  let { data } = await client
     .from("collections")
     .select("*")
     .eq("id", userId)
     .maybeSingle();
 
-  if (data && data.data) {
-    collection = data.data;
-  } else {
-    collection = {};
-  }
+  collection = data?.data || {};
 }
 
-// =====================================================
-// SAVE COLLECTION
-// =====================================================
+// ================= SAVE =================
 
 async function saveCollection() {
-
   await client
     .from("collections")
     .upsert({
@@ -93,85 +66,25 @@ async function saveCollection() {
     });
 }
 
-// =====================================================
-// TAB SYSTEM
-// =====================================================
-
-function showTab(id) {
-
-  let tabs = document.querySelectorAll(".tab");
-
-  for (let i = 0; i < tabs.length; i++) {
-    tabs[i].classList.remove("active");
-  }
-
-  document.getElementById(id).classList.add("active");
-}
-
-// =====================================================
-// RARITY SYSTEM
-// =====================================================
-
-function getRarity() {
-
-  let r = Math.random() * 100;
-
-  if (r < 1) return 6;
-  if (r < 5) return 5;
-  if (r < 15) return 4;
-  if (r < 30) return 3;
-  if (r < 60) return 2;
-  return 1;
-}
-
-// =====================================================
-// RANDOM CARD
-// =====================================================
-
-function getCard() {
-
-  let rarity = getRarity();
-
-  let pool = [];
-
-  for (let i = 0; i < cardsDB.length; i++) {
-    if (cardsDB[i].rarity === rarity) {
-      pool.push(cardsDB[i]);
-    }
-  }
-
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-// =====================================================
-// BOOSTER OPEN
-// =====================================================
+// ================= BOOSTER =================
 
 function openBooster() {
 
   if (!gameReady) return;
 
-  let now = Date.now();
+  if (Date.now() - lastOpen < COOLDOWN) return;
 
-  if (now - lastOpen < COOLDOWN) return;
-
-  lastOpen = now;
+  lastOpen = Date.now();
 
   let pack = [];
-
-  document.getElementById("boosterResult").innerHTML = "";
 
   for (let i = 0; i < 6; i++) {
 
     let card = getCard();
-
     pack.push(card);
 
     if (!collection[card.id]) {
-      collection[card.id] = {
-        copies: 0,
-        discovered: true
-      };
+      collection[card.id] = { copies: 0 };
     }
 
     collection[card.id].copies++;
@@ -183,77 +96,66 @@ function openBooster() {
   renderCollection();
 }
 
-// =====================================================
-// BOOSTER RENDER
-// =====================================================
+// ================= CARD =================
+
+function getCard() {
+  let rarity = Math.random() < 0.01 ? 6 :
+               Math.random() < 0.05 ? 5 :
+               Math.random() < 0.15 ? 4 :
+               Math.random() < 0.35 ? 3 :
+               Math.random() < 0.65 ? 2 : 1;
+
+  let pool = cardsDB.filter(c => c.rarity === rarity);
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ================= RENDER BOOSTER =================
 
 function renderBooster(pack) {
 
   let div = document.getElementById("boosterResult");
-
   div.innerHTML = "";
 
-  for (let i = 0; i < pack.length; i++) {
+  pack.forEach((c, i) => {
 
     setTimeout(() => {
 
-      let c = pack[i];
-
       let data = collection[c.id];
 
-      if (!data) return;
-
       let el = document.createElement("div");
-
       el.className = "card";
 
-      if (c.rarity === 6) {
-        el.classList.add("holo");
-      }
-
-      let img = images[c.id];
+      if (c.rarity === 6) el.classList.add("holo");
 
       el.innerHTML = `
         <p><b>${c.name}</b></p>
         <p>⭐ ${c.rarity}</p>
         <p>x${data?.copies ?? 0}</p>
-        ${img ? `<img src="${img}">` : ""}
       `;
 
       div.appendChild(el);
 
-    }, i * 250);
-  }
+    }, i * 200);
+  });
 }
 
-// =====================================================
-// COLLECTION RENDER
-// =====================================================
+// ================= COLLECTION =================
 
 function renderCollection() {
 
   let div = document.getElementById("collectionList");
-
   div.innerHTML = "";
 
-  let count = 0;
-
-  for (let i = 0; i < cardsDB.length; i++) {
-    if (collection[cardsDB[i].id]) count++;
-  }
+  let count = Object.keys(collection).length;
 
   let header = document.createElement("div");
-
-  header.innerText = `📚 ${count}/${cardsDB.length}`;
-
+  header.innerText = `${count}/${cardsDB.length}`;
   header.style.textAlign = "center";
-  header.style.fontSize = "18px";
 
   div.appendChild(header);
 
-  for (let i = 0; i < cardsDB.length; i++) {
-
-    let c = cardsDB[i];
+  cardsDB.forEach(c => {
 
     let el = document.createElement("div");
     el.className = "card";
@@ -261,7 +163,7 @@ function renderCollection() {
     let data = collection[c.id];
 
     if (!data) {
-      el.innerHTML = "❓ UNKNOWN";
+      el.innerHTML = "❓";
     } else {
       el.innerHTML = `
         <p><b>${c.name}</b></p>
@@ -271,14 +173,12 @@ function renderCollection() {
     }
 
     div.appendChild(el);
-  }
+  });
 }
 
-// =====================================================
-// COOLDOWN LOOP
-// =====================================================
+// ================= COOLDOWN =================
 
-function startCooldownLoop() {
+function startCooldown() {
 
   setInterval(() => {
 
@@ -287,19 +187,14 @@ function startCooldownLoop() {
 
     let diff = COOLDOWN - (Date.now() - lastOpen);
 
-    if (diff <= 0) {
-      el.innerText = "";
-      return;
-    }
-
-    el.innerText = `Cooldown : ${Math.ceil(diff / 1000)}s`;
+    el.innerText = diff > 0
+      ? "Cooldown " + Math.ceil(diff / 1000) + "s"
+      : "";
 
   }, 1000);
 }
 
-// =====================================================
-// IMAGE UPLOAD (SUPABASE)
-// =====================================================
+// ================= IMAGES =================
 
 async function uploadImage() {
 
@@ -321,28 +216,20 @@ async function uploadImage() {
   renderCollection();
 }
 
-// =====================================================
-// LOAD IMAGES
-// =====================================================
-
 function loadImages() {
 
-  for (let i = 0; i < cardsDB.length; i++) {
+  cardsDB.forEach(c => {
 
-    let id = cardsDB[i].id;
-
-    let path = `${userId}/${id}.png`;
+    let path = `${userId}/${c.id}.png`;
 
     let { data } = client.storage
       .from("cards")
       .getPublicUrl(path);
 
-    images[id] = data.publicUrl;
-  }
+    images[c.id] = data.publicUrl;
+  });
 }
 
-// =====================================================
-// START GAME
-// =====================================================
+// ================= START =================
 
 initGame();
