@@ -1,5 +1,7 @@
 // =====================================================
 // DATABASE CARDS
+// Met l'URL de l'image directement ici si tu veux
+// Exemple : url: "https://monsite.com/flamior.png"
 // =====================================================
 
 let cardsDB = [
@@ -38,15 +40,13 @@ let dropRates = [
 // STORAGE SYSTEM
 // =====================================================
 
-let collection =
-  JSON.parse(localStorage.getItem("collection")) || {};
-
-let lastBoosterOpen =
-  Number(localStorage.getItem("lastBoosterOpen")) || 0;
+let collection = JSON.parse(localStorage.getItem("collection")) || {};
+let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
 // GET CARD IMAGE
-// Priorité : url dans cardsDB > localStorage upload
+// Priorité 1 : url dans cardsDB
+// Priorité 2 : image sauvegardée via l'admin
 // =====================================================
 
 function getCardImage(card) {
@@ -62,8 +62,7 @@ function getCardImage(card) {
 // =====================================================
 
 function showTab(tabId) {
-  let tabs = document.querySelectorAll(".tab");
-  tabs.forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.getElementById(tabId).classList.add("active");
 }
 
@@ -88,8 +87,7 @@ function getRandomRarity() {
 function getRandomCard() {
   let rarity = getRandomRarity();
   let pool = cardsDB.filter(c => c.rarity === rarity);
-  let index = Math.floor(Math.random() * pool.length);
-  return pool[index];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // =====================================================
@@ -108,7 +106,6 @@ function openBooster() {
 
   lastBoosterOpen = now;
   localStorage.setItem("lastBoosterOpen", lastBoosterOpen);
-
   animateBoosterButton();
 
   let pack = generatePack(6);
@@ -124,14 +121,12 @@ function openBooster() {
 
 function generatePack(size) {
   let pack = [];
-  for (let i = 0; i < size; i++) {
-    pack.push(getRandomCard());
-  }
+  for (let i = 0; i < size; i++) pack.push(getRandomCard());
   return pack;
 }
 
 // =====================================================
-// SAVE COLLECTION LOGIC
+// SAVE COLLECTION
 // =====================================================
 
 function saveCollection(pack) {
@@ -165,19 +160,14 @@ function renderBooster(pack) {
 
   pack.forEach((card, index) => {
     setTimeout(() => {
-
       let el = document.createElement("div");
       el.className = "card";
-
       if (card.rarity === 6) el.classList.add("holo");
 
       let data = collection[card.id];
       let isNew = data.copies === 1;
-
       let imgSrc = getCardImage(card);
-      console.log("Booster - carte:", card.name, "| image:", imgSrc);
 
-      // NEW TAG
       if (isNew) {
         let newTag = document.createElement("div");
         newTag.innerText = "NEW";
@@ -186,24 +176,18 @@ function renderBooster(pack) {
         el.appendChild(newTag);
       }
 
-      // IMAGE
       if (imgSrc) {
         let image = document.createElement("img");
         image.src = imgSrc;
-        image.onerror = () => console.warn("Image non chargée pour", card.name, ":", imgSrc);
         el.appendChild(image);
       }
 
-      // TEXTE
       let name = document.createElement("p");
       name.innerHTML = "<b>" + card.name + "</b>";
-
       let rarity = document.createElement("p");
       rarity.innerText = "⭐ " + card.rarity;
-
       let id = document.createElement("p");
       id.innerText = "ID " + card.id;
-
       let copy = document.createElement("p");
       copy.innerText = "x" + data.copies;
 
@@ -211,7 +195,6 @@ function renderBooster(pack) {
       el.appendChild(rarity);
       el.appendChild(id);
       el.appendChild(copy);
-
       container.appendChild(el);
 
     }, index * 250);
@@ -227,9 +210,7 @@ function renderCollection() {
   container.innerHTML = "";
 
   let count = 0;
-  for (let c of cardsDB) {
-    if (collection[c.id]) count++;
-  }
+  for (let c of cardsDB) { if (collection[c.id]) count++; }
 
   let header = document.createElement("div");
   header.innerText = "📚 Collection : " + count + "/" + cardsDB.length;
@@ -239,32 +220,25 @@ function renderCollection() {
 
   cardsDB.forEach(card => {
     let data = collection[card.id];
-
     let el = document.createElement("div");
     el.className = "card";
-
     if (card.rarity === 6 && data) el.classList.add("holo");
 
     if (!data) {
       el.innerHTML = "❓ UNKNOWN";
     } else {
       let imgSrc = getCardImage(card);
-      console.log("Collection - carte:", card.name, "| image:", imgSrc);
 
-      // IMAGE
       if (imgSrc) {
         let image = document.createElement("img");
         image.src = imgSrc;
-        image.onerror = () => console.warn("Image non chargée pour", card.name, ":", imgSrc);
         el.appendChild(image);
       }
 
       let text = document.createElement("p");
       text.innerHTML = "<b>" + card.name + "</b>";
-
       let rarity = document.createElement("p");
       rarity.innerText = "⭐ " + card.rarity;
-
       let copies = document.createElement("p");
       copies.innerText = "x" + data.copies;
 
@@ -286,43 +260,48 @@ function startCooldown() {
     let now = Date.now();
     let diff = 40000 - (now - lastBoosterOpen);
     let el = document.getElementById("cooldown");
-
     if (!el) { clearInterval(interval); return; }
-
     if (diff <= 0) {
       el.innerText = "";
       clearInterval(interval);
       return;
     }
-
     el.innerText = "Cooldown : " + Math.ceil(diff / 1000) + "s";
   }, 1000);
 }
 
 // =====================================================
-// IMAGE UPLOAD SYSTEM (fichier OU url)
+// IMAGE UPLOAD (URL ou fichier)
 // =====================================================
 
 function uploadImage() {
-  let id = document.getElementById("cardIdInput").value;
-  let urlInput = document.getElementById("imgUrlInput");
-  let url = urlInput ? urlInput.value.trim() : "";
+  let id = document.getElementById("cardIdInput").value.trim();
+
+  if (!id) {
+    alert("Entre un ID de carte.");
+    return;
+  }
+
+  let url = document.getElementById("imgUrlInput").value.trim();
 
   if (url !== "") {
     localStorage.setItem("img_" + id, url);
     renderCollection();
-    alert("URL sauvegardée pour la carte ID " + id);
+    alert("✅ Image enregistrée pour la carte ID " + id);
     return;
   }
 
   let file = document.getElementById("imgInput").files[0];
-  if (!file) { alert("Aucune image ni URL fournie."); return; }
+  if (!file) {
+    alert("Entre une URL ou choisis un fichier.");
+    return;
+  }
 
   let reader = new FileReader();
   reader.onload = function(e) {
     localStorage.setItem("img_" + id, e.target.result);
     renderCollection();
-    alert("Image uploadée pour la carte ID " + id);
+    alert("✅ Image enregistrée pour la carte ID " + id);
   };
   reader.readAsDataURL(file);
 }

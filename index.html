@@ -5,73 +5,45 @@
   <title>TCG Pocket Original</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
   <div class="app">
-
-    <!-- HEADER -->
     <header class="topbar">
       <h1>TCG Pocket</h1>
     </header>
-
-    <!-- NAV -->
     <nav class="nav">
       <button onclick="showTab('booster')">🎁 Booster</button>
       <button onclick="showTab('collection')">📚 Collection</button>
       <button onclick="showTab('admin')">⚙️ Admin</button>
     </nav>
-
     <main>
-
-      <!-- BOOSTER -->
       <section id="booster" class="tab active">
         <div class="panel">
-
           <h2>Ouvrir un booster</h2>
-
           <button id="openBoosterBtn" class="primary-btn" onclick="openBooster()">
             Ouvrir un pack (6 cartes)
           </button>
-
           <p id="cooldown"></p>
-
           <div id="boosterResult" class="cards-grid"></div>
-
         </div>
       </section>
-
-      <!-- COLLECTION -->
       <section id="collection" class="tab">
         <div class="panel">
-
           <h2>Collection</h2>
-
           <div id="collectionList" class="cards-grid"></div>
-
         </div>
       </section>
-
-      <!-- ADMIN -->
       <section id="admin" class="tab">
         <div class="panel">
-
           <h2>Admin - Upload image</h2>
-
-          <input id="cardIdInput" placeholder="ID carte">
-          <input type="file" id="imgInput">
-
-          <button class="primary-btn" onclick="uploadImage()">
-            Upload
-          </button>
-
+          <p style="font-size:13px; color:#aaa; margin-bottom:8px;">Entre l'ID de la carte, puis une URL ou un fichier image.</p>
+          <input id="cardIdInput" placeholder="ID carte (ex: 1)" style="display:block; width:100%; margin-bottom:8px; padding:10px; border-radius:10px; border:none; font-size:14px;">
+          <input id="imgUrlInput" type="text" placeholder="URL de l'image (optionnel)" style="display:block; width:100%; margin-bottom:8px; padding:10px; border-radius:10px; border:none; font-size:14px;">
+          <input type="file" id="imgInput" style="display:block; margin-bottom:12px;">
+          <button class="primary-btn" onclick="uploadImage()">Enregistrer</button>
         </div>
       </section>
-
     </main>
-
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
