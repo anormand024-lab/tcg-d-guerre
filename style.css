@@ -5,31 +5,51 @@
 
 body {
   margin: 0;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   background: radial-gradient(circle at top, #1a1f3c, #0b0d18);
   color: white;
   overflow-x: hidden;
 }
 
 .app {
-  max-width: 450px;
+  max-width: 460px;
   margin: auto;
   padding-bottom: 40px;
+  position: relative;
+}
+
+/* background glow global */
+.app::before {
+  content: "";
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06), transparent);
+  top: -120px;
+  left: -120px;
+  filter: blur(50px);
+  animation: floatGlow 7s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes floatGlow {
+  from { transform: translateY(0px); }
+  to { transform: translateY(50px); }
 }
 
 /* ===================================================== */
-/* HEADER */
+/* TOPBAR */
 /* ===================================================== */
 
 .topbar {
   text-align: center;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
-  padding: 15px;
+  padding: 16px;
   letter-spacing: 2px;
   text-transform: uppercase;
   background: rgba(255,255,255,0.05);
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.4);
 }
 
 /* ===================================================== */
@@ -45,15 +65,16 @@ body {
 .nav button {
   flex: 1;
   padding: 14px;
-  border-radius: 16px;
   border: none;
+  border-radius: 16px;
   font-weight: bold;
   cursor: pointer;
   color: white;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
 
-/* couleurs boutons */
+/* button colors */
 .nav button:nth-child(1) {
   background: linear-gradient(135deg, #ff4d4d, #ff9a3c);
 }
@@ -71,8 +92,13 @@ body {
   filter: brightness(1.2);
 }
 
+/* hover effect desktop */
+.nav button:hover {
+  transform: scale(1.05);
+}
+
 /* ===================================================== */
-/* TABS SYSTEM */
+/* TAB SYSTEM */
 /* ===================================================== */
 
 .tab {
@@ -93,7 +119,7 @@ body {
 }
 
 /* ===================================================== */
-/* BUTTON BOOSTER */
+/* BOOSTER BUTTON */
 /* ===================================================== */
 
 .primary-btn {
@@ -105,17 +131,19 @@ body {
   font-weight: bold;
   color: white;
   cursor: pointer;
+
   background: linear-gradient(135deg, #ffcc00, #ff5e62);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .primary-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.5);
 }
 
-/* booster shake animation */
+/* booster shake */
 .booster-open {
   animation: shake 0.5s ease;
 }
@@ -129,7 +157,7 @@ body {
 }
 
 /* ===================================================== */
-/* GRID CARDS */
+/* GRID */
 /* ===================================================== */
 
 .cards-grid {
@@ -137,7 +165,7 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-top: 15px;
-  padding-bottom: 20px;
+  padding-bottom: 30px;
 }
 
 /* ===================================================== */
@@ -146,19 +174,20 @@ body {
 
 .card {
   position: relative;
-  background: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.08);
   border-radius: 18px;
   padding: 12px;
   text-align: center;
   overflow: hidden;
 
-  /* animation entrée */
   opacity: 0;
   transform: scale(0.4);
   animation: cardAppear 0.35s ease forwards;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-/* animation apparition carte */
+/* apparition animation */
 @keyframes cardAppear {
   to {
     opacity: 1;
@@ -167,7 +196,7 @@ body {
 }
 
 /* ===================================================== */
-/* SHINE EFFECT (GLOBAL CARDS) */
+/* SHINE EFFECT */
 /* ===================================================== */
 
 .card::before {
@@ -184,7 +213,7 @@ body {
     transparent
   );
   transform: rotate(25deg);
-  animation: shine 2.8s infinite;
+  animation: shine 3s infinite;
   pointer-events: none;
 }
 
@@ -194,11 +223,12 @@ body {
 }
 
 /* ===================================================== */
-/* HOLO EFFECT (RARITY 6) */
+/* HOLO (RARITY 6) */
 /* ===================================================== */
 
 .holo {
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .holo::after {
@@ -208,6 +238,7 @@ body {
   height: 200%;
   top: -50%;
   left: -50%;
+
   background: linear-gradient(
     115deg,
     transparent,
@@ -216,7 +247,8 @@ body {
     rgba(255,255,0,0.25),
     transparent
   );
-  animation: holoMove 2s linear infinite;
+
+  animation: holoMove 2.5s linear infinite;
   pointer-events: none;
 }
 
@@ -226,17 +258,7 @@ body {
 }
 
 /* ===================================================== */
-/* IMAGES */
-/* ===================================================== */
-
-.card img {
-  width: 100%;
-  border-radius: 14px;
-  margin-bottom: 6px;
-}
-
-/* ===================================================== */
-/* TEXT */
+/* CARD CONTENT */
 /* ===================================================== */
 
 .card p {
@@ -244,13 +266,29 @@ body {
   font-size: 13px;
 }
 
+.card img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+
 /* ===================================================== */
 /* NEW TAG */
 /* ===================================================== */
 
 .card b {
-  display: inline-block;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+/* ===================================================== */
+/* COLLECTION HEADER STYLE */
+/* ===================================================== */
+
+.collection-header {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
 }
 
 /* ===================================================== */
@@ -259,44 +297,24 @@ body {
 
 #cooldown {
   text-align: center;
+  font-size: 14px;
   margin-top: 10px;
   font-weight: bold;
-  font-size: 14px;
   color: gold;
   letter-spacing: 1px;
 }
 
 /* ===================================================== */
-/* COLLECTION HEADER */
-/* ===================================================== */
-
-.collection-header {
-  text-align: center;
-  font-size: 18px;
-  margin: 10px 0;
-  font-weight: bold;
-}
-
-/* ===================================================== */
-/* UNKNOWN CARD STYLE */
+/* UNKNOWN CARD */
 /* ===================================================== */
 
 .unknown {
   font-size: 40px;
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
 /* ===================================================== */
-/* SCROLL IMPROVEMENT */
-/* ===================================================== */
-
-.cards-grid {
-  overflow-y: auto;
-  max-height: 70vh;
-}
-
-/* ===================================================== */
-/* CARD HOVER (desktop bonus) */
+/* CARD INTERACTION */
 /* ===================================================== */
 
 .card:hover {
@@ -304,34 +322,30 @@ body {
   transition: transform 0.2s ease;
 }
 
-/* ===================================================== */
-/* SMALL GLOW ON ACTIVE CARD */
-/* ===================================================== */
-
 .card:active {
   transform: scale(0.97);
 }
 
 /* ===================================================== */
-/* EXTRA POLISH EFFECTS */
+/* SCROLL AREA FIX */
 /* ===================================================== */
 
-/* background floating glow */
-.app::before {
-  content: "";
-  position: fixed;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent);
-  top: -100px;
-  left: -100px;
-  filter: blur(40px);
-  animation: floatGlow 6s ease-in-out infinite alternate;
+.cards-grid {
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-@keyframes floatGlow {
-  from { transform: translateY(0px); }
-  to { transform: translateY(40px); }
+/* ===================================================== */
+/* SMALL GLOW EFFECT */
+/* ===================================================== */
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+  pointer-events: none;
 }
 
 /* ===================================================== */
