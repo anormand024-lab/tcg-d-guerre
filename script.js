@@ -7,7 +7,7 @@
 let cardsDB = [
 
   // ==================== RARETÉ 1 ====================
-  { id: 1,  name: "Petit PD",     rarity: 1, url: "https://i.postimg.cc/yYbqWpJy/Sans-titre-448-20260602204421.png" },
+  { id: 1,  name: "Petit PD",     rarity: 1, url: "https://i.postimg.cc/X7qCWX60/Sans-titre-474-20260605013027.png" },
   { id: 2,  name: "Petit PD",       rarity: 1, url: "" },
   { id: 3,  name: "P de D",       rarity: 1, url: "" },
   { id: 4,  name: "Le Romantique",     rarity: 1, url: "" },
@@ -221,6 +221,7 @@ function saveCollection(pack) {
     if (!collection[card.id]) {
       collection[card.id] = { discovered: true, copies: 1 };
     } else {
+      if (!collection[card.id].copies) collection[card.id].copies = 1;
       collection[card.id].copies += 1;
     }
   });
@@ -325,6 +326,7 @@ function renderCollection() {
       text.innerHTML = "<b>" + card.name + "</b>";
       let rarity = document.createElement("p");
       rarity.innerText = "⭐ " + card.rarity;
+      if (!data.copies) data.copies = 1;
       let copies = document.createElement("p");
       copies.innerText = "x" + data.copies;
 
