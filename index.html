@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TCG Pocket Original</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="tabs">
+    <button onclick="showTab('booster')">Booster</button>
+    button onclick="showTab('collection')">Collection</button>
+    <button onclick="showTab('admin')">Admin</button>
+  </div>
+
+  <!-- BOOSTER -->
+  <div id="booster" class="tab active">
+    <h2>Ouvrir un booster</h2>
+    <button id="openBoosterBtn" onclick="openBooster()">Ouvrir un pack (6 cartes)</button>
+    <p id="cooldown"></p>
+    <div id="boosterResult"></div>
+  </div>
+
+  <!-- COLLECTION -->
+  <div id="collection" class="tab">
+    <h2>Collection</h2>
+    <div id="collectionList"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin" class="tab">
+    <h2>Admin - Upload image carte</h2>
+    <input id="cardIdInput" placeholder="ID carte">
+    <input type="file" id="imgInput">
+    <button onclick="uploadImage()">Uploader</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

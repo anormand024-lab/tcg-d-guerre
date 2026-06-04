@@ -1,0 +1,27 @@
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+}
+
+.tabs button {
+  margin: 5px;
+  padding: 10px;
+}
+
+.tab {
+  display: none;
+  padding: 20px;
+}
+
+.tab.active {
+  display: block;
+}
+
+.card {
+  display: inline-block;
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid white;
+  width: 120px;
+}
