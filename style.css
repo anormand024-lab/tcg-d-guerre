@@ -1,25 +1,18 @@
 
-/* ===================== */
 /* GLOBAL */
-/* ===================== */
-
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: radial-gradient(circle at top, #1a1f3c, #0b0d18);
   color: white;
 }
 
-/* APP CONTAINER */
 .app {
   max-width: 420px;
   margin: auto;
 }
 
-/* ===================== */
-/* TOP BAR */
-/* ===================== */
-
+/* TOP */
 .topbar {
   text-align: center;
   padding: 15px;
@@ -27,93 +20,51 @@ body {
   font-weight: bold;
 }
 
-/* ===================== */
-/* NAV BUTTONS */
-/* ===================== */
-
+/* NAV */
 .nav {
   display: flex;
-  justify-content: space-around;
-  padding: 10px;
   gap: 5px;
+  padding: 10px;
 }
 
 .nav button {
   flex: 1;
-  padding: 14px;
+  padding: 12px;
+  border-radius: 14px;
   border: none;
-  border-radius: 16px;
   font-weight: bold;
-  font-size: 14px;
-  color: white;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  color: white;
 }
 
-/* couleurs */
-.nav button:nth-child(1) {
-  background: linear-gradient(135deg, #ff4d4d, #ff9a3c);
-}
-.nav button:nth-child(2) {
-  background: linear-gradient(135deg, #4dd2ff, #4d7cff);
-}
-.nav button:nth-child(3) {
-  background: linear-gradient(135deg, #b84dff, #ff4df0);
-}
+.nav button:nth-child(1) { background: linear-gradient(135deg,#ff4d4d,#ff9a3c); }
+.nav button:nth-child(2) { background: linear-gradient(135deg,#4dd2ff,#4d7cff); }
+.nav button:nth-child(3) { background: linear-gradient(135deg,#b84dff,#ff4df0); }
 
-/* click animation */
 .nav button:active {
-  transform: scale(0.92);
-  filter: brightness(1.2);
-}
-
-/* ===================== */
-/* PANELS */
-/* ===================== */
-
-.panel {
-  padding: 15px;
-}
-
-/* ===================== */
-/* BOOSTER BUTTON */
-/* ===================== */
-
-.primary-btn {
-  width: 100%;
-  padding: 18px;
-  border-radius: 20px;
-  border: none;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  cursor: pointer;
-  background: linear-gradient(135deg, #ffcc00, #ff5e62);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-  transition: transform 0.15s ease;
-}
-
-.primary-btn:active {
   transform: scale(0.95);
 }
 
-/* animation bouton booster */
-.booster-open {
-  animation: shake 0.6s ease;
+/* TABS FIX IMPORTANT */
+.tab {
+  display: none;
 }
 
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-3px); }
-  100% { transform: translateX(0); }
+.tab.active {
+  display: block;
 }
 
-/* ===================== */
-/* CARDS GRID */
-/* ===================== */
+/* BUTTON */
+.primary-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  font-weight: bold;
+  background: linear-gradient(135deg,#ffcc00,#ff5e62);
+}
 
+/* CARDS */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -121,132 +72,42 @@ body {
   margin-top: 15px;
 }
 
-/* ===================== */
-/* CARDS */
-/* ===================== */
-
 .card {
   background: rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 10px;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-
-  animation: cardAppear 0.4s ease forwards;
-  opacity: 0;
-  transform: scale(0.8);
+  animation: pop 0.3s ease;
 }
 
-/* apparition carte */
-@keyframes cardAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.5) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
-/* shine léger */
-.card::before {
-  content: "";
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255,255,255,0.15),
-    transparent
-  );
-  transform: rotate(25deg);
-  animation: shine 2.5s infinite;
-  pointer-events: none;
-}
-
-@keyframes shine {
-  0% { transform: translateX(-100%) rotate(25deg); }
-  100% { transform: translateX(100%) rotate(25deg); }
-}
-
-/* ===================== */
-/* HOLO EFFECT (RARITY 6) */
-/* ===================== */
-
-.holo {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
-}
-
-/* couche arc-en-ciel */
+/* HOLO */
 .holo::after {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
   width: 200%;
   height: 200%;
-
   background: linear-gradient(
     115deg,
-    transparent 0%,
-    rgba(255, 0, 255, 0.25) 20%,
-    rgba(0, 255, 255, 0.25) 40%,
-    rgba(255, 255, 0, 0.25) 60%,
-    rgba(255, 0, 255, 0.25) 80%,
-    transparent 100%
+    transparent,
+    rgba(0,255,255,0.3),
+    rgba(255,0,255,0.3),
+    transparent
   );
-
-  transform: rotate(25deg);
-  animation: holoMove 2.5s linear infinite;
-  pointer-events: none;
+  animation: holo 2s linear infinite;
 }
 
-/* mouvement holo */
-@keyframes holoMove {
-  0% { transform: translateX(-100%) rotate(25deg); }
-  100% { transform: translateX(100%) rotate(25deg); }
+@keyframes holo {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 
-/* ===================== */
-/* IMAGES */
-/* ===================== */
-
-.card img {
-  width: 100%;
-  border-radius: 12px;
-}
-
-/* ===================== */
-/* TEXT */
-/* ===================== */
-
-p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-
-/* ===================== */
-/* COOLDOWN TEXT */
-/* ===================== */
-
+/* COOLDOWN */
 #cooldown {
   text-align: center;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #ffcc00;
-}
-
-/* ===================== */
-/* UNKNOWN CARD */
-/* ===================== */
-
-.unknown {
-  font-size: 60px;
-  opacity: 0.4;
+  color: gold;
 }
