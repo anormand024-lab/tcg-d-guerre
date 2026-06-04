@@ -1,3 +1,8 @@
+
+/* ===================== */
+/* GLOBAL */
+/* ===================== */
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -5,13 +10,16 @@ body {
   color: white;
 }
 
-/* APP */
+/* APP CONTAINER */
 .app {
   max-width: 420px;
   margin: auto;
 }
 
-/* TOP */
+/* ===================== */
+/* TOP BAR */
+/* ===================== */
+
 .topbar {
   text-align: center;
   padding: 15px;
@@ -19,17 +27,19 @@ body {
   font-weight: bold;
 }
 
-/* NAV */
+/* ===================== */
+/* NAV BUTTONS */
+/* ===================== */
+
 .nav {
   display: flex;
   justify-content: space-around;
   padding: 10px;
+  gap: 5px;
 }
 
-/* 🔥 GROS BOUTONS */
 .nav button {
   flex: 1;
-  margin: 5px;
   padding: 14px;
   border: none;
   border-radius: 16px;
@@ -40,23 +50,35 @@ body {
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-/* couleurs différentes */
-.nav button:nth-child(1) { background: linear-gradient(135deg, #ff4d4d, #ff9a3c); }
-.nav button:nth-child(2) { background: linear-gradient(135deg, #4dd2ff, #4d7cff); }
-.nav button:nth-child(3) { background: linear-gradient(135deg, #b84dff, #ff4df0); }
-
-/* clic animation */
-.nav button:active {
-  transform: scale(0.92);
-  filter: brightness(1.3);
+/* couleurs */
+.nav button:nth-child(1) {
+  background: linear-gradient(135deg, #ff4d4d, #ff9a3c);
+}
+.nav button:nth-child(2) {
+  background: linear-gradient(135deg, #4dd2ff, #4d7cff);
+}
+.nav button:nth-child(3) {
+  background: linear-gradient(135deg, #b84dff, #ff4df0);
 }
 
-/* PANEL */
+/* click animation */
+.nav button:active {
+  transform: scale(0.92);
+  filter: brightness(1.2);
+}
+
+/* ===================== */
+/* PANELS */
+/* ===================== */
+
 .panel {
   padding: 15px;
 }
 
-/* 🔥 GROS BOUTON BOOSTER */
+/* ===================== */
+/* BOOSTER BUTTON */
+/* ===================== */
+
 .primary-btn {
   width: 100%;
   padding: 18px;
@@ -75,56 +97,7 @@ body {
   transform: scale(0.95);
 }
 
-/* GRID CARTES */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 15px;
-}
-
-/* 🎴 CARTE */
-.card {
-  background: rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 10px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  transform: scale(0.8);
-  opacity: 0;
-  animation: cardAppear 0.4s forwards;
-}
-
-/* apparition carte */
-@keyframes cardAppear {
-  0% {
-    transform: scale(0.5) translateY(20px);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-/* shine rare */
-.card::before {
-  content: "";
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
-  transform: rotate(25deg);
-  animation: shine 2.5s infinite;
-}
-
-@keyframes shine {
-  0% { transform: translateX(-100%) rotate(25deg); }
-  100% { transform: translateX(100%) rotate(25deg); }
-}
-
-/* BOOSTER ANIMATION */
+/* animation bouton booster */
 .booster-open {
   animation: shake 0.6s ease;
 }
@@ -137,6 +110,143 @@ body {
   100% { transform: translateX(0); }
 }
 
-/* tabs */
-.tab { display: none; }
-.tab.active { display: block; }
+/* ===================== */
+/* CARDS GRID */
+/* ===================== */
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* ===================== */
+/* CARDS */
+/* ===================== */
+
+.card {
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  animation: cardAppear 0.4s ease forwards;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+/* apparition carte */
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* shine léger */
+.card::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255,255,255,0.15),
+    transparent
+  );
+  transform: rotate(25deg);
+  animation: shine 2.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+
+/* ===================== */
+/* HOLO EFFECT (RARITY 6) */
+/* ===================== */
+
+.holo {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+/* couche arc-en-ciel */
+.holo::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 0, 255, 0.25) 20%,
+    rgba(0, 255, 255, 0.25) 40%,
+    rgba(255, 255, 0, 0.25) 60%,
+    rgba(255, 0, 255, 0.25) 80%,
+    transparent 100%
+  );
+
+  transform: rotate(25deg);
+  animation: holoMove 2.5s linear infinite;
+  pointer-events: none;
+}
+
+/* mouvement holo */
+@keyframes holoMove {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+
+/* ===================== */
+/* IMAGES */
+/* ===================== */
+
+.card img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* ===================== */
+/* TEXT */
+/* ===================== */
+
+p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* ===================== */
+/* COOLDOWN TEXT */
+/* ===================== */
+
+#cooldown {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #ffcc00;
+}
+
+/* ===================== */
+/* UNKNOWN CARD */
+/* ===================== */
+
+.unknown {
+  font-size: 60px;
+  opacity: 0.4;
+}
