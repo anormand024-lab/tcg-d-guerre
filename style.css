@@ -220,6 +220,25 @@ body {
 }
 
 /* ===================================================== */
+/* CARTE MASQUÉE (non obtenue) */
+/* ===================================================== */
+
+.card-locked {
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  filter: none;
+}
+
+.lock-icon {
+  font-size: 24px;
+  opacity: 0.25;
+}
+
+/* ===================================================== */
 /* IMAGES — format 4:3 */
 /* ===================================================== */
 

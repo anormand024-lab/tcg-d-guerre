@@ -309,7 +309,9 @@ function renderCollection() {
     if (card.rarity === 6 && data) el.classList.add("holo");
 
     if (!data) {
-      el.innerHTML = "❓ UNKNOWN";
+      // MODIFICATION : cadenas au lieu de "❓ UNKNOWN"
+      el.classList.add("card-locked");
+      el.innerHTML = "<div class='lock-icon'>🔒</div>";
     } else {
       let imgSrc = getCardImage(card);
 
