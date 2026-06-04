@@ -1,25 +1,24 @@
-
 // =====================================================
 // DATABASE CARDS
 // =====================================================
 
 let cardsDB = [
-  { id: 1, name: "Flamior", rarity: 1 },
-  { id: 2, name: "Leafy", rarity: 1 },
-  { id: 3, name: "Rocky", rarity: 1 },
+  { id: 1,  name: "Flamior",     rarity: 1, url: "" },
+  { id: 2,  name: "Leafy",       rarity: 1, url: "" },
+  { id: 3,  name: "Rocky",       rarity: 1, url: "" },
 
-  { id: 4, name: "Aquos", rarity: 2 },
-  { id: 5, name: "Pyron", rarity: 2 },
-  { id: 6, name: "Florania", rarity: 2 },
+  { id: 4,  name: "Aquos",       rarity: 2, url: "" },
+  { id: 5,  name: "Pyron",       rarity: 2, url: "" },
+  { id: 6,  name: "Florania",    rarity: 2, url: "" },
 
-  { id: 7, name: "Voltair", rarity: 3 },
-  { id: 8, name: "Froston", rarity: 3 },
+  { id: 7,  name: "Voltair",     rarity: 3, url: "" },
+  { id: 8,  name: "Froston",     rarity: 3, url: "" },
 
-  { id: 9, name: "Shadowrex", rarity: 4 },
-  { id: 10, name: "Lumina", rarity: 4 },
+  { id: 9,  name: "Shadowrex",   rarity: 4, url: "" },
+  { id: 10, name: "Lumina",      rarity: 4, url: "" },
 
-  { id: 11, name: "Umbrix", rarity: 5 },
-  { id: 12, name: "Dracora EX", rarity: 6 }
+  { id: 11, name: "Umbrix",      rarity: 5, url: "" },
+  { id: 12, name: "Dracora EX",  rarity: 6, url: "https://www.istockphoto.com/fr/photos/rabin" }
 ];
 
 // =====================================================
@@ -31,8 +30,8 @@ let dropRates = [
   { rarity: 2, chance: 25 },
   { rarity: 3, chance: 15 },
   { rarity: 4, chance: 10 },
-  { rarity: 5, chance: 4 },
-  { rarity: 6, chance: 1 }
+  { rarity: 5, chance: 4  },
+  { rarity: 6, chance: 1  }
 ];
 
 // =====================================================
@@ -44,6 +43,17 @@ let collection =
 
 let lastBoosterOpen =
   Number(localStorage.getItem("lastBoosterOpen")) || 0;
+
+// =====================================================
+// GET CARD IMAGE (URL prioritaire sur localStorage)
+// =====================================================
+
+function getCardImage(card) {
+  if (card.url && card.url.trim() !== "") {
+    return card.url;
+  }
+  return localStorage.getItem("img_" + card.id) || null;
+}
 
 // =====================================================
 // TAB SYSTEM
@@ -199,7 +209,7 @@ function animateBoosterButton() {
 }
 
 // =====================================================
-// BOOSTER RENDER (ANIMATION IMPORTANT)
+// BOOSTER RENDER (ANIMATION IMPORTANTE)
 // =====================================================
 
 function renderBooster(pack) {
@@ -226,7 +236,8 @@ function renderBooster(pack) {
 
       let isNew = data.copies === 1;
 
-      let img = localStorage.getItem("img_" + card.id);
+      // MODIFIÉ : utilise getCardImage() au lieu de localStorage direct
+      let img = getCardImage(card);
 
       el.innerHTML = "";
 
@@ -341,6 +352,19 @@ function renderCollection() {
 
     } else {
 
+      // MODIFIÉ : utilise getCardImage() au lieu de localStorage direct
+      let img = getCardImage(card);
+
+      if (img) {
+
+        let image =
+          document.createElement("img");
+
+        image.src = img;
+
+        el.appendChild(image);
+      }
+
       let text =
         document.createElement("p");
 
@@ -408,7 +432,7 @@ function startCooldown() {
 }
 
 // =====================================================
-// IMAGE UPLOAD SYSTEM
+// IMAGE UPLOAD SYSTEM (support URL + fichier)
 // =====================================================
 
 function uploadImage() {
@@ -416,8 +440,23 @@ function uploadImage() {
   let id =
     document.getElementById("cardIdInput").value;
 
+  let urlInput =
+    document.getElementById("imgUrlInput");
+
+  let url = urlInput ? urlInput.value.trim() : "";
+
+  // Si une URL est saisie, on la sauvegarde en priorité
+  if (url !== "") {
+    localStorage.setItem("img_" + id, url);
+    renderCollection();
+    return;
+  }
+
+  // Sinon, on utilise le fichier uploadé
   let file =
     document.getElementById("imgInput").files[0];
+
+  if (!file) return;
 
   let reader =
     new FileReader();
