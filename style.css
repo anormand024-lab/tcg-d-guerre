@@ -1,78 +1,81 @@
-/* ===== GLOBAL ===== */
 body {
   margin: 0;
-  font-family: "Poppins", Arial, sans-serif;
-  background: radial-gradient(circle at top, #1b1f3a, #0b0d18);
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at top, #1a1f3c, #0b0d18);
   color: white;
 }
 
-/* ===== APP CONTAINER ===== */
+/* APP */
 .app {
   max-width: 420px;
   margin: auto;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
-/* ===== TOP BAR ===== */
+/* TOP */
 .topbar {
   text-align: center;
   padding: 15px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
 }
 
-/* ===== NAV ===== */
+/* NAV */
 .nav {
   display: flex;
   justify-content: space-around;
   padding: 10px;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
 }
 
+/* 🔥 GROS BOUTONS */
 .nav button {
-  background: transparent;
+  flex: 1;
+  margin: 5px;
+  padding: 14px;
   border: none;
-  color: white;
+  border-radius: 16px;
+  font-weight: bold;
   font-size: 14px;
-  padding: 10px;
+  color: white;
   cursor: pointer;
-  transition: 0.2s;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.nav button:hover {
-  transform: scale(1.1);
+/* couleurs différentes */
+.nav button:nth-child(1) { background: linear-gradient(135deg, #ff4d4d, #ff9a3c); }
+.nav button:nth-child(2) { background: linear-gradient(135deg, #4dd2ff, #4d7cff); }
+.nav button:nth-child(3) { background: linear-gradient(135deg, #b84dff, #ff4df0); }
+
+/* clic animation */
+.nav button:active {
+  transform: scale(0.92);
+  filter: brightness(1.3);
 }
 
-/* ===== PANEL ===== */
+/* PANEL */
 .panel {
   padding: 15px;
 }
 
-/* ===== BUTTON ===== */
+/* 🔥 GROS BOUTON BOOSTER */
 .primary-btn {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 18px;
+  border-radius: 20px;
   border: none;
+  font-size: 16px;
   font-weight: bold;
   color: white;
-  background: linear-gradient(135deg, #7b5cff, #3dd6ff);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-  margin-top: 10px;
   cursor: pointer;
-  transition: 0.2s;
+  background: linear-gradient(135deg, #ffcc00, #ff5e62);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease;
 }
 
-.primary-btn:hover {
-  transform: scale(1.03);
+.primary-btn:active {
+  transform: scale(0.95);
 }
 
-/* ===== CARDS GRID ===== */
+/* GRID CARTES */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -80,35 +83,40 @@ body {
   margin-top: 15px;
 }
 
-/* ===== CARD DESIGN ===== */
+/* 🎴 CARTE */
 .card {
   background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 10px;
   text-align: center;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
+  transform: scale(0.8);
+  opacity: 0;
+  animation: cardAppear 0.4s forwards;
 }
 
-/* effet "foil" */
+/* apparition carte */
+@keyframes cardAppear {
+  0% {
+    transform: scale(0.5) translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* shine rare */
 .card::before {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255,255,255,0.1),
-    transparent
-  );
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
   transform: rotate(25deg);
-  animation: shine 3s infinite;
+  animation: shine 2.5s infinite;
 }
 
 @keyframes shine {
@@ -116,39 +124,19 @@ body {
   100% { transform: translateX(100%) rotate(25deg); }
 }
 
-.card:hover {
-  transform: scale(1.05) rotate(1deg);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+/* BOOSTER ANIMATION */
+.booster-open {
+  animation: shake 0.6s ease;
 }
 
-/* rarity glow */
-.card[data-rarity="6"] {
-  border: 2px solid gold;
-  box-shadow: 0 0 15px gold;
-}
-
-.card[data-rarity="5"] {
-  border: 2px solid violet;
-  box-shadow: 0 0 10px violet;
-}
-
-/* image */
-.card img {
-  width: 100%;
-  border-radius: 10px;
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
 }
 
 /* tabs */
-.tab {
-  display: none;
-  animation: fade 0.3s ease;
-}
-
-.tab.active {
-  display: block;
-}
-
-@keyframes fade {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.tab { display: none; }
+.tab.active { display: block; }
