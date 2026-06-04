@@ -3,7 +3,7 @@
 // =====================================================
 
 let cardsDB = [
-  { id: 1,  name: "Flamior",     rarity: 1, url: "" },
+  { id: 1,  name: "Flamior",     rarity: 1, url: "https://fr.freepik.com/photos-vecteurs-libre/fichiers-png-fierte-gay" },
   { id: 2,  name: "Leafy",       rarity: 1, url: "" },
   { id: 3,  name: "Rocky",       rarity: 1, url: "" },
 
