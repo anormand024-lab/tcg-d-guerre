@@ -36,7 +36,7 @@ const rarityRates = [
 ];
 
 // =====================
-// COLLECTION DATA
+// STORAGE
 // =====================
 
 let collectionData =
@@ -64,13 +64,13 @@ function showTab(tab) {
 function getRandomCard() {
 
   let rand = Math.random() * 100;
-  let cumulative = 0;
+  let sum = 0;
 
   for (let r of rarityRates) {
-    cumulative += r.chance;
-    if (rand <= cumulative) {
-      return cardsDB.filter(c => c.rarity === r.rarity)
-        .sort(() => Math.random() - 0.5)[0];
+    sum += r.chance;
+    if (rand <= sum) {
+      let pool = cardsDB.filter(c => c.rarity === r.rarity);
+      return pool[Math.floor(Math.random() * pool.length)];
     }
   }
 }
@@ -97,7 +97,6 @@ function openBooster() {
   setTimeout(() => btn.classList.remove("booster-open"), 500);
 
   let pack = [];
-
   document.getElementById("boosterResult").innerHTML = "";
 
   for (let i = 0; i < 6; i++) {
@@ -135,24 +134,27 @@ function renderBooster(pack) {
 
       if (c.rarity === 6) card.classList.add("holo");
 
-      let isNew = collectionData[c.id].copies === 1;
+      let data = collectionData[c.id];
+      let isNew = data.copies === 1;
+
+      let img = localStorage.getItem("img_" + c.id);
 
       card.innerHTML = `
         ${isNew ? "<b style='color:lime'>NEW</b>" : ""}
+        ${img ? `<img src="${img}">` : ""}
         <p><b>${c.name}</b></p>
         <p>⭐ ${c.rarity}</p>
-        <p>ID ${c.id}</p>
+        <p>x${data.copies}</p>
       `;
 
       div.appendChild(card);
 
     }, i * 250);
-
   });
 }
 
 // =====================
-// COLLECTION DISPLAY
+// COLLECTION
 // =====================
 
 function renderCollection() {
@@ -171,6 +173,7 @@ function renderCollection() {
   header.style.textAlign = "center";
   header.style.fontSize = "18px";
   header.style.marginBottom = "10px";
+
   div.appendChild(header);
 
   cardsDB.forEach(c => {
@@ -194,6 +197,25 @@ function renderCollection() {
 
     div.appendChild(card);
   });
+}
+
+// =====================
+// ADMIN IMAGE
+// =====================
+
+function uploadImage() {
+
+  let id = document.getElementById("cardIdInput").value;
+  let file = document.getElementById("imgInput").files[0];
+
+  let reader = new FileReader();
+
+  reader.onload = e => {
+    localStorage.setItem("img_" + id, e.target.result);
+    renderCollection();
+  };
+
+  reader.readAsDataURL(file);
 }
 
 // =====================
