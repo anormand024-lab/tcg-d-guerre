@@ -5,11 +5,11 @@
 // =====================================================
 
 let cardsDB = [
-  { id: 1,  name: "Flamior",     rarity: 1, url: "" },
-  { id: 2,  name: "Leafy",       rarity: 1, url: "https://i.postimg.cc/WtR3vpPm/IMG-7159.jpg" },
-  { id: 3,  name: "Rocky",       rarity: 1, url: "" },
+  { id: 1,  name: "Petit PD",     rarity: 1, url: "https://i.postimg.cc/yYbqWpJy/Sans-titre-448-20260602204421.png" },
+  { id: 2,  name: "Petit PD",       rarity: 1, url: "https://i.postimg.cc/nzZgN6WR/Sans-titre-449-20260602204431.png" },
+  { id: 3,  name: "P de D",       rarity: 1, url: "" },
 
-  { id: 4,  name: "Aquos",       rarity: 2, url: "" },
+  { id: 4,  name: "Le Romantique",       rarity: 1, url: "" },
   { id: 5,  name: "Pyron",       rarity: 2, url: "" },
   { id: 6,  name: "Florania",    rarity: 2, url: "" },
 
