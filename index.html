@@ -5,34 +5,71 @@
   <title>TCG Pocket Original</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <div class="tabs">
-    <button onclick="showTab('booster')">Booster</button>
-    button onclick="showTab('collection')">Collection</button>
-    <button onclick="showTab('admin')">Admin</button>
-  </div>
+  <div class="app">
 
-  <!-- BOOSTER -->
-  <div id="booster" class="tab active">
-    <h2>Ouvrir un booster</h2>
-    <button id="openBoosterBtn" onclick="openBooster()">Ouvrir un pack (6 cartes)</button>
-    <p id="cooldown"></p>
-    <div id="boosterResult"></div>
-  </div>
+    <!-- HEADER -->
+    <header class="topbar">
+      <h1>TCG Pocket</h1>
+    </header>
 
-  <!-- COLLECTION -->
-  <div id="collection" class="tab">
-    <h2>Collection</h2>
-    <div id="collectionList"></div>
-  </div>
+    <!-- NAV -->
+    <nav class="nav">
+      <button onclick="showTab('booster')">🎁 Booster</button>
+      <button onclick="showTab('collection')">📚 Collection</button>
+      <button onclick="showTab('admin')">⚙️ Admin</button>
+    </nav>
 
-  <!-- ADMIN -->
-  <div id="admin" class="tab">
-    <h2>Admin - Upload image carte</h2>
-    <input id="cardIdInput" placeholder="ID carte">
-    <input type="file" id="imgInput">
-    <button onclick="uploadImage()">Uploader</button>
+    <main>
+
+      <!-- BOOSTER -->
+      <section id="booster" class="tab active">
+        <div class="panel">
+
+          <h2>Ouvrir un booster</h2>
+
+          <button id="openBoosterBtn" class="primary-btn" onclick="openBooster()">
+            Ouvrir un pack (6 cartes)
+          </button>
+
+          <p id="cooldown"></p>
+
+          <div id="boosterResult" class="cards-grid"></div>
+
+        </div>
+      </section>
+
+      <!-- COLLECTION -->
+      <section id="collection" class="tab">
+        <div class="panel">
+
+          <h2>Collection</h2>
+
+          <div id="collectionList" class="cards-grid"></div>
+
+        </div>
+      </section>
+
+      <!-- ADMIN -->
+      <section id="admin" class="tab">
+        <div class="panel">
+
+          <h2>Admin - Upload image</h2>
+
+          <input id="cardIdInput" placeholder="ID carte">
+          <input type="file" id="imgInput">
+
+          <button class="primary-btn" onclick="uploadImage()">
+            Upload
+          </button>
+
+        </div>
+      </section>
+
+    </main>
+
   </div>
 
   <script src="script.js"></script>

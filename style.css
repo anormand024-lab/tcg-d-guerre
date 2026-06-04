@@ -1,27 +1,154 @@
+/* ===== GLOBAL ===== */
 body {
-  font-family: Arial;
-  background: #111;
+  margin: 0;
+  font-family: "Poppins", Arial, sans-serif;
+  background: radial-gradient(circle at top, #1b1f3a, #0b0d18);
   color: white;
 }
 
-.tabs button {
-  margin: 5px;
-  padding: 10px;
+/* ===== APP CONTAINER ===== */
+.app {
+  max-width: 420px;
+  margin: auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* ===== TOP BAR ===== */
+.topbar {
+  text-align: center;
+  padding: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+}
+
+/* ===== NAV ===== */
+.nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+}
+
+.nav button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav button:hover {
+  transform: scale(1.1);
+}
+
+/* ===== PANEL ===== */
+.panel {
+  padding: 15px;
+}
+
+/* ===== BUTTON ===== */
+.primary-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, #7b5cff, #3dd6ff);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.primary-btn:hover {
+  transform: scale(1.03);
+}
+
+/* ===== CARDS GRID ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* ===== CARD DESIGN ===== */
+.card {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* effet "foil" */
+.card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255,255,255,0.1),
+    transparent
+  );
+  transform: rotate(25deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+
+.card:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+}
+
+/* rarity glow */
+.card[data-rarity="6"] {
+  border: 2px solid gold;
+  box-shadow: 0 0 15px gold;
+}
+
+.card[data-rarity="5"] {
+  border: 2px solid violet;
+  box-shadow: 0 0 10px violet;
+}
+
+/* image */
+.card img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+/* tabs */
 .tab {
   display: none;
-  padding: 20px;
+  animation: fade 0.3s ease;
 }
 
 .tab.active {
   display: block;
 }
 
-.card {
-  display: inline-block;
-  margin: 5px;
-  padding: 10px;
-  border: 1px solid white;
-  width: 120px;
+@keyframes fade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
