@@ -6,7 +6,7 @@
 
 let cardsDB = [
   { id: 1,  name: "Flamior",     rarity: 1, url: "" },
-  { id: 2,  name: "Leafy",       rarity: 1, url: "" },
+  { id: 2,  name: "Leafy",       rarity: 1, url: "https://i.postimg.cc/WtR3vpPm/IMG-7159.jpg" },
   { id: 3,  name: "Rocky",       rarity: 1, url: "" },
 
   { id: 4,  name: "Aquos",       rarity: 2, url: "" },
