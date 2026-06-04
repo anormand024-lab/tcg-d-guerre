@@ -5,22 +5,26 @@
 // =====================================================
 
 let cardsDB = [
-  { id: 1,  name: "Petit PD",     rarity: 1, url: "https://i.postimg.cc/yYbqWpJy/Sans-titre-448-20260602204421.png" },
-  { id: 2,  name: "Petit PD",       rarity: 1, url: "https://i.postimg.cc/nzZgN6WR/Sans-titre-449-20260602204431.png" },
+  { id: 1,  name: "Petit PD",     rarity: 1, url: "" },
+  { id: 2,  name: "Petit PD",       rarity: 1, url: "" },
   { id: 3,  name: "P de D",       rarity: 1, url: "" },
 
-  { id: 4,  name: "Le Romantique",       rarity: 1, url: "" },
-  { id: 5,  name: "Pyron",       rarity: 2, url: "" },
-  { id: 6,  name: "Florania",    rarity: 2, url: "" },
+  { id: 4,  name: "Le Romantique",       rarity: 2, url: "" },
+  { id: 5,  name: "GetDildo",       rarity: 2, url: "" },
+  { id: 6,  name: "GetMalgache",    rarity: 2, url: "" },
 
-  { id: 7,  name: "Voltair",     rarity: 3, url: "" },
-  { id: 8,  name: "Froston",     rarity: 3, url: "" },
+  { id: 7,  name: "Negrophile",     rarity: 3, url: "" },
+  { id: 8,  name: "Gros Negro",     rarity: 3, url: "" },
 
-  { id: 9,  name: "Shadowrex",   rarity: 4, url: "" },
-  { id: 10, name: "Lumina",      rarity: 4, url: "" },
+  { id: 9,  name: "Babinski Tower",   rarity: 4, url: "" },
+  { id: 10, name: "Créature",      rarity: 4, url: "" },
 
-  { id: 11, name: "Umbrix",      rarity: 5, url: "" },
-  { id: 12, name: "Dracora EX",  rarity: 6, url: "" }
+  { id: 11, name: "Gwer",      rarity: 5, url: "" },
+  { id: 12, name: "Gestapo",  rarity: 6, url: "" },
+  { id: 13, name: "Mommy",   rarity: 1, url: "" },
+  { id: 14, name: "Femboy",   rarity: 1, url: "" },
+  { id: 15, name: "Scammeur Vinted",   rarity: 1, url: "" },
+  { id: 16, name: "Normand Fait Des Vidéos",   rarity: 1, url: "" }
 ];
 
 // =====================================================
@@ -186,14 +190,11 @@ function renderBooster(pack) {
       name.innerHTML = "<b>" + card.name + "</b>";
       let rarity = document.createElement("p");
       rarity.innerText = "⭐ " + card.rarity;
-      let id = document.createElement("p");
-      id.innerText = "ID " + card.id;
       let copy = document.createElement("p");
       copy.innerText = "x" + data.copies;
 
       el.appendChild(name);
       el.appendChild(rarity);
-      el.appendChild(id);
       el.appendChild(copy);
       container.appendChild(el);
 
