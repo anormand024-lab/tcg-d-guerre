@@ -7,7 +7,7 @@
 let cardsDB = [
 
   // ==================== RARETÉ 1 ====================
-  { id: 1,  name: "Petit PD",     rarity: 1, url: "https://i.postimg.cc/X7qCWX60/Sans-titre-474-20260605013027.png" },
+  { id: 1,  name: "Petit PD",     rarity: 1, url: "https://github.com/anormand024-lab/image/blob/main/Sans%20titre%20474_20260605013027.png" },
   { id: 2,  name: "Petit PD",       rarity: 1, url: "" },
   { id: 3,  name: "P de D",       rarity: 1, url: "" },
   { id: 4,  name: "Le Romantique",     rarity: 1, url: "" },
