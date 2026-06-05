@@ -1,7 +1,5 @@
 // =====================================================
 // DATABASE CARDS
-// Met l'URL de l'image directement ici si tu veux
-// Exemple : url: "https://monsite.com/flamior.png"
 // =====================================================
 
 let cardsDB = [
@@ -132,8 +130,6 @@ let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
 // GET CARD IMAGE
-// Priorité 1 : url dans cardsDB
-// Priorité 2 : image sauvegardée via l'admin
 // =====================================================
 
 function getCardImage(card) {
@@ -239,51 +235,241 @@ function animateBoosterButton() {
 }
 
 // =====================================================
-// BOOSTER RENDER
+// BOOSTER RENDER — SWIPE CARD BY CARD
 // =====================================================
 
 function renderBooster(pack) {
   let container = document.getElementById("boosterResult");
   container.innerHTML = "";
 
-  pack.forEach((card, index) => {
+  let currentIndex = 0;
+  let isAnimating = false;
+
+  // Counter
+  let counter = document.createElement("div");
+  counter.className = "swipe-counter";
+  counter.innerText = "1 / " + pack.length;
+  container.appendChild(counter);
+
+  // Swipe zone
+  let swipeContainer = document.createElement("div");
+  swipeContainer.id = "swipeContainer";
+  container.appendChild(swipeContainer);
+
+  let cardEl = document.createElement("div");
+  cardEl.id = "swipeCard";
+  swipeContainer.appendChild(cardEl);
+
+  // Arrow buttons
+  let arrows = document.createElement("div");
+  arrows.className = "swipe-arrows";
+
+  let prevBtn = document.createElement("button");
+  prevBtn.id = "prevBtn";
+  prevBtn.innerText = "◀";
+  prevBtn.disabled = true;
+
+  let nextBtn = document.createElement("button");
+  nextBtn.id = "nextBtn";
+  nextBtn.innerText = "▶";
+
+  arrows.appendChild(prevBtn);
+  arrows.appendChild(nextBtn);
+  container.appendChild(arrows);
+
+  // Hint
+  let hint = document.createElement("div");
+  hint.className = "swipe-hint";
+  hint.innerText = "← swipe ou utilise les flèches →";
+  container.appendChild(hint);
+
+  // -----------------------------------------------
+  // Render a card at given index
+  // direction: "left" (coming from right) or "right" (coming from left)
+  // -----------------------------------------------
+  function renderCard(index, direction) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    let card = pack[index];
+    let data = collection[card.id];
+    let isNew = data.copies === 1;
+    let imgSrc = getCardImage(card);
+
+    // Build content into a temp div first so swap is instant
+    let newContent = document.createElement("div");
+    newContent.id = "swipeCard";
+    newContent.className = "card rarity-" + card.rarity;
+    if (card.rarity === 6) newContent.classList.add("holo");
+
+    // Override card animation so it doesn't fade-in on its own
+    newContent.style.animation = "none";
+    newContent.style.opacity = "1";
+    newContent.style.transform = "scale(1)";
+
+    if (isNew) {
+      let newTag = document.createElement("div");
+      newTag.innerText = "✨ NEW";
+      newTag.style.cssText = "color:lime;font-weight:bold;font-size:14px;margin-bottom:6px;";
+      newContent.appendChild(newTag);
+    }
+
+    if (imgSrc) {
+      let img = document.createElement("img");
+      img.src = imgSrc;
+      newContent.appendChild(img);
+    }
+
+    let name = document.createElement("p");
+    name.innerHTML = "<b>" + card.name + "</b>";
+    let rarity = document.createElement("p");
+    rarity.innerText = "⭐ " + card.rarity;
+    let copy = document.createElement("p");
+    copy.innerText = "x" + data.copies;
+
+    newContent.appendChild(name);
+    newContent.appendChild(rarity);
+    newContent.appendChild(copy);
+
+    // Slide out current card
+    let outClass = (direction === "left") ? "swipe-left" : "swipe-right";
+    cardEl.classList.add(outClass);
+
     setTimeout(() => {
-      let el = document.createElement("div");
-      el.className = "card";
-      if (card.rarity === 6) el.classList.add("holo");
+      // Swap card element
+      swipeContainer.replaceChild(newContent, cardEl);
+      cardEl = newContent;
 
-      let data = collection[card.id];
-      let isNew = data.copies === 1;
-      let imgSrc = getCardImage(card);
+      // Position new card off-screen (opposite side), no transition
+      let inClass = (direction === "left") ? "from-right" : "from-left";
+      cardEl.classList.add(inClass);
 
-      if (isNew) {
-        let newTag = document.createElement("div");
-        newTag.innerText = "NEW";
-        newTag.style.color = "lime";
-        newTag.style.fontWeight = "bold";
-        el.appendChild(newTag);
-      }
+      // Force reflow so the browser registers the off-screen position
+      void cardEl.offsetWidth;
 
-      if (imgSrc) {
-        let image = document.createElement("img");
-        image.src = imgSrc;
-        el.appendChild(image);
-      }
+      // Slide in
+      cardEl.style.transition = "transform 0.25s ease, opacity 0.25s ease";
+      cardEl.classList.remove(inClass);
 
-      let name = document.createElement("p");
-      name.innerHTML = "<b>" + card.name + "</b>";
-      let rarity = document.createElement("p");
-      rarity.innerText = "⭐ " + card.rarity;
-      let copy = document.createElement("p");
-      copy.innerText = "x" + data.copies;
+      // Re-attach touch/mouse listeners to new card element
+      attachDragListeners();
 
-      el.appendChild(name);
-      el.appendChild(rarity);
-      el.appendChild(copy);
-      container.appendChild(el);
+      counter.innerText = (index + 1) + " / " + pack.length;
+      prevBtn.disabled = (index === 0);
+      nextBtn.disabled = (index === pack.length - 1);
 
-    }, index * 250);
+      setTimeout(() => { isAnimating = false; }, 260);
+    }, 250);
+  }
+
+  // -----------------------------------------------
+  // Navigation
+  // -----------------------------------------------
+  function goNext() {
+    if (isAnimating || currentIndex >= pack.length - 1) return;
+    currentIndex++;
+    renderCard(currentIndex, "left");
+  }
+
+  function goPrev() {
+    if (isAnimating || currentIndex <= 0) return;
+    currentIndex--;
+    renderCard(currentIndex, "right");
+  }
+
+  nextBtn.addEventListener("click", goNext);
+  prevBtn.addEventListener("click", goPrev);
+
+  // -----------------------------------------------
+  // Touch swipe
+  // -----------------------------------------------
+  let touchStartX = 0;
+
+  swipeContainer.addEventListener("touchstart", e => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+
+  swipeContainer.addEventListener("touchend", e => {
+    let diff = touchStartX - e.changedTouches[0].clientX;
+    if (diff > 50) goNext();
+    else if (diff < -50) goPrev();
   });
+
+  // -----------------------------------------------
+  // Mouse drag
+  // -----------------------------------------------
+  let mouseStartX = 0;
+  let dragging = false;
+
+  function attachDragListeners() {
+    cardEl.addEventListener("mousedown", e => {
+      mouseStartX = e.clientX;
+      dragging = true;
+      cardEl.style.cursor = "grabbing";
+    });
+  }
+
+  window.addEventListener("mouseup", e => {
+    if (!dragging) return;
+    dragging = false;
+    if (cardEl) cardEl.style.cursor = "grab";
+    let diff = mouseStartX - e.clientX;
+    if (diff > 60) goNext();
+    else if (diff < -60) goPrev();
+  });
+
+  // -----------------------------------------------
+  // First render — slide in from right
+  // -----------------------------------------------
+  let firstCard = pack[0];
+  let firstData = collection[firstCard.id];
+  let firstImgSrc = getCardImage(firstCard);
+
+  cardEl.className = "card rarity-" + firstCard.rarity;
+  if (firstCard.rarity === 6) cardEl.classList.add("holo");
+  cardEl.style.animation = "none";
+  cardEl.style.opacity = "0";
+  cardEl.style.transform = "translateX(130%) rotate(15deg)";
+  cardEl.style.transition = "none";
+  cardEl.innerHTML = "";
+
+  if (firstData.copies === 1) {
+    let newTag = document.createElement("div");
+    newTag.innerText = "✨ NEW";
+    newTag.style.cssText = "color:lime;font-weight:bold;font-size:14px;margin-bottom:6px;";
+    cardEl.appendChild(newTag);
+  }
+
+  if (firstImgSrc) {
+    let img = document.createElement("img");
+    img.src = firstImgSrc;
+    cardEl.appendChild(img);
+  }
+
+  let firstName = document.createElement("p");
+  firstName.innerHTML = "<b>" + firstCard.name + "</b>";
+  let firstRarity = document.createElement("p");
+  firstRarity.innerText = "⭐ " + firstCard.rarity;
+  let firstCopy = document.createElement("p");
+  firstCopy.innerText = "x" + firstData.copies;
+  cardEl.appendChild(firstName);
+  cardEl.appendChild(firstRarity);
+  cardEl.appendChild(firstCopy);
+
+  attachDragListeners();
+
+  // Trigger slide-in animation on next frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      cardEl.style.transition = "transform 0.35s ease, opacity 0.35s ease";
+      cardEl.style.opacity = "1";
+      cardEl.style.transform = "translateX(0) rotate(0deg)";
+      setTimeout(() => { isAnimating = false; }, 360);
+    });
+  });
+
+  nextBtn.disabled = (pack.length <= 1);
+  prevBtn.disabled = true;
 }
 
 // =====================================================
@@ -306,14 +492,14 @@ function renderCollection() {
   cardsDB.forEach(card => {
     let data = collection[card.id];
     let el = document.createElement("div");
-    el.className = "card";
-    if (card.rarity === 6 && data) el.classList.add("holo");
 
     if (!data) {
-      // MODIFICATION : cadenas au lieu de "❓ UNKNOWN"
-      el.classList.add("card-locked");
+      el.className = "card card-locked";
       el.innerHTML = "<div class='lock-icon'>🔒</div>";
     } else {
+      el.className = "card rarity-" + card.rarity;
+      if (card.rarity === 6) el.classList.add("holo");
+
       let imgSrc = getCardImage(card);
 
       if (imgSrc) {

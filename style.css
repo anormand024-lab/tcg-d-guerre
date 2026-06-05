@@ -347,5 +347,153 @@ body {
 }
 
 /* ===================================================== */
+/* RARITY BORDERS */
+/* ===================================================== */
+
+.rarity-1 {
+  border: 2px solid #888780;
+  box-shadow: 0 0 8px rgba(136,135,128,0.4);
+}
+
+.rarity-2 {
+  border: 2px solid #378ADD;
+  box-shadow: 0 0 8px rgba(55,138,221,0.4);
+}
+
+.rarity-3 {
+  border: 2px solid #1D9E75;
+  box-shadow: 0 0 10px rgba(29,158,117,0.5);
+}
+
+.rarity-4 {
+  border: 2px solid #7F77DD;
+  box-shadow: 0 0 10px rgba(127,119,221,0.5);
+}
+
+.rarity-5 {
+  border: 2px solid #EF9F27;
+  box-shadow: 0 0 12px rgba(239,159,39,0.5);
+}
+
+.rarity-6 {
+  border: 3px solid gold;
+  box-shadow: 0 0 16px rgba(255,215,0,0.6);
+  animation: rarityGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes rarityGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,215,0,0.5); }
+  50%       { box-shadow: 0 0 28px rgba(255,215,0,0.95); }
+}
+
+/* ===================================================== */
+/* SWIPE BOOSTER SYSTEM */
+/* ===================================================== */
+
+#swipeContainer {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+  touch-action: pan-y;
+}
+
+#swipeCard {
+  width: 85%;
+  max-width: 320px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  cursor: grab;
+  user-select: none;
+  animation: none;
+  opacity: 1;
+  transform: scale(1);
+}
+
+#swipeCard.swipe-left {
+  transform: translateX(-130%) rotate(-15deg);
+  opacity: 0;
+}
+
+#swipeCard.swipe-right {
+  transform: translateX(130%) rotate(15deg);
+  opacity: 0;
+}
+
+#swipeCard.from-right {
+  transform: translateX(130%) rotate(15deg);
+  opacity: 0;
+  transition: none;
+}
+
+#swipeCard.from-left {
+  transform: translateX(-130%) rotate(-15deg);
+  opacity: 0;
+  transition: none;
+}
+
+#swipeCard img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  pointer-events: none;
+  display: block;
+}
+
+.swipe-hint {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.4;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+.swipe-counter {
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+  color: gold;
+  margin-top: 10px;
+  letter-spacing: 2px;
+}
+
+.swipe-arrows {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  margin-top: 12px;
+}
+
+.swipe-arrows button {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.swipe-arrows button:active {
+  background: rgba(255,255,255,0.25);
+  transform: scale(0.9);
+}
+
+.swipe-arrows button:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* ===================================================== */
 /* END FILE */
 /* ===================================================== */
