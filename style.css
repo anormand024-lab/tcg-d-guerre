@@ -191,10 +191,6 @@ body {
 /* HOLO EFFECT */
 /* ===================================================== */
 
-.holo {
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-}
-
 .holo::after {
   content: "";
   position: absolute;
@@ -377,13 +373,12 @@ body {
 
 .rarity-6 {
   border: 3px solid gold;
-  box-shadow: 0 0 16px rgba(255,215,0,0.6);
   animation: rarityGlow 1.5s ease-in-out infinite;
 }
 
 @keyframes rarityGlow {
-  0%, 100% { box-shadow: 0 0 12px rgba(255,215,0,0.5); }
-  50%       { box-shadow: 0 0 28px rgba(255,215,0,0.95); }
+  0%, 100% { box-shadow: 0 0 12px rgba(255,215,0,0.5), 0 0 20px rgba(255,215,0,0.3); }
+  50%       { box-shadow: 0 0 28px rgba(255,215,0,0.95), 0 0 50px rgba(255,215,0,0.5); }
 }
 
 /* ===================================================== */
