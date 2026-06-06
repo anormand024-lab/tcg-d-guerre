@@ -29,6 +29,34 @@ body {
   text-transform: uppercase;
   background: rgba(255,255,255,0.05);
   box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+/* ===================================================== */
+/* BOUTON MUSIQUE (flottant en haut à droite du topbar) */
+/* ===================================================== */
+
+#musicToggleBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 6px 10px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, opacity 0.2s;
+  white-space: nowrap;
+}
+
+#musicToggleBtn:active {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-50%) scale(0.95);
 }
 
 /* ===================================================== */
@@ -491,7 +519,6 @@ body {
   overflow: hidden;
 }
 
-/* Image du booster — plus grande, ratio portrait-like pour bien voir l'illustration */
 #cardBack img {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -599,10 +626,6 @@ body {
 }
 
 /* ===================================================== */
-/* END FILE */
-/* ===================================================== */
-
-/* ===================================================== */
 /* BARRE PROGRESSION FULL DIAMANT */
 /* ===================================================== */
 
@@ -610,3 +633,123 @@ body {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ===================================================== */
+/* RÉCAPITULATIF BOOSTER — 6 cartes côte à côte         */
+/* ===================================================== */
+
+#boosterRecap {
+  width: 100%;
+  margin-top: 24px;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.recap-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: gold;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.recap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* Les cartes du recap réutilisent les classes rarity-X */
+/* On leur applique une apparence mini + animation d'entrée en cascade */
+.recap-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 6px;
+  text-align: center;
+  overflow: hidden;
+  cursor: default;
+  opacity: 0;
+  transform: translateY(20px) scale(0.85);
+  animation: recapCardIn 0.4s ease forwards;
+}
+
+@keyframes recapCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.recap-card img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.recap-card p {
+  margin: 2px 0;
+  font-size: 10px;
+}
+
+.recap-card b {
+  font-size: 9px;
+}
+
+/* Placeholder si pas d'image */
+.recap-placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  opacity: 0.3;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+/* Badge NEW sur les cartes récap */
+.recap-new-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: linear-gradient(135deg, #00e676, #00bcd4);
+  color: #000;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  box-shadow: 0 0 6px rgba(0,230,118,0.6);
+}
+
+/* Shine sur les cartes recap aussi */
+.recap-card::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255,255,255,0.12),
+    transparent
+  );
+  transform: rotate(25deg);
+  animation: shine 3s infinite;
+  pointer-events: none;
+}
+
+/* ===================================================== */
+/* END FILE */
+/* ===================================================== */

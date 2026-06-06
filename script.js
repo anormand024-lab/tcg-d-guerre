@@ -107,7 +107,7 @@ let cardsDB = [
   { id: 90, name: "Photo de groupe",    rarity: 6, url: "" },
 
   // ==================== RARETÉ 7 — FULL DIAMANT ====================
-  { id: 91, name: "Full Diamant",    rarity: 7, url: "" },
+  { id: 91, name: "Full Diamant",    rarity: 7, url: "https://i.postimg.cc/VLswGvTQ/Screenshot-20260606-215824-Chat-GPT.jpg" },
   { id: 92, name: "Bite de riche",   rarity: 3, url: "" },
   { id: 93, name: "Gwer Test",       rarity: 1, url: "" },
   { id: 94, name: "Juda Test",       rarity: 1, url: "" },
@@ -159,6 +159,152 @@ let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
+}
+
+// =====================================================
+// BACKGROUND MUSIC SYSTEM
+// =====================================================
+
+let bgMusicPlaying = false;
+let bgMusicNodes = [];
+
+function startBackgroundMusic() {
+  try {
+    let ctx = getAudioCtx();
+    if (ctx.state === "suspended") ctx.resume();
+    if (bgMusicPlaying) return;
+    bgMusicPlaying = true;
+
+    // Notes de la mélodie (fréquences en Hz) — ambiance mystique TCG
+    // Gamme pentatonique mineure : Do, Mib, Fa, Sol, Sib
+    const melody = [
+      { freq: 261.63, dur: 0.5 }, // C4
+      { freq: 311.13, dur: 0.5 }, // Eb4
+      { freq: 349.23, dur: 0.5 }, // F4
+      { freq: 392.00, dur: 0.5 }, // G4
+      { freq: 349.23, dur: 0.5 }, // F4
+      { freq: 311.13, dur: 0.5 }, // Eb4
+      { freq: 261.63, dur: 1.0 }, // C4
+      { freq: 233.08, dur: 0.5 }, // Bb3
+      { freq: 261.63, dur: 0.5 }, // C4
+      { freq: 311.13, dur: 0.5 }, // Eb4
+      { freq: 392.00, dur: 0.5 }, // G4
+      { freq: 466.16, dur: 0.5 }, // Bb4
+      { freq: 392.00, dur: 0.5 }, // G4
+      { freq: 349.23, dur: 0.5 }, // F4
+      { freq: 311.13, dur: 1.0 }, // Eb4
+      { freq: 261.63, dur: 1.0 }, // C4
+    ];
+
+    // Basse (octave inférieur)
+    const bass = [
+      { freq: 65.41,  dur: 2.0 }, // C2
+      { freq: 87.31,  dur: 2.0 }, // F2
+      { freq: 73.42,  dur: 2.0 }, // D2
+      { freq: 65.41,  dur: 2.0 }, // C2
+    ];
+
+    let totalDur = melody.reduce((s, n) => s + n.dur, 0);
+    let bassTotalDur = bass.reduce((s, n) => s + n.dur, 0);
+
+    function scheduleMelody(startTime) {
+      let t = startTime;
+      melody.forEach(note => {
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = note.freq;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.08, t + 0.02);
+        gain.gain.setValueAtTime(0.08, t + note.dur - 0.05);
+        gain.gain.linearRampToValueAtTime(0, t + note.dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + note.dur + 0.01);
+        bgMusicNodes.push(osc);
+        t += note.dur;
+      });
+      return t;
+    }
+
+    function scheduleBass(startTime) {
+      let t = startTime;
+      bass.forEach(note => {
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.value = note.freq;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.06, t + 0.05);
+        gain.gain.setValueAtTime(0.06, t + note.dur - 0.1);
+        gain.gain.linearRampToValueAtTime(0, t + note.dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + note.dur + 0.01);
+        bgMusicNodes.push(osc);
+        t += note.dur;
+      });
+    }
+
+    // Pad d'ambiance (drone)
+    function schedulePad(startTime, duration) {
+      [130.81, 196.00, 233.08].forEach((freq, i) => {
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.03 - i * 0.006, startTime + 0.5);
+        gain.gain.setValueAtTime(0.03 - i * 0.006, startTime + duration - 0.5);
+        gain.gain.linearRampToValueAtTime(0, startTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.01);
+        bgMusicNodes.push(osc);
+      });
+    }
+
+    // Boucle : on replanifie avant la fin
+    function loop(startTime) {
+      if (!bgMusicPlaying) return;
+      scheduleMelody(startTime);
+      scheduleBass(startTime);
+      schedulePad(startTime, totalDur);
+      // On replanifie la boucle 0.1s avant la fin
+      let delay = (startTime - ctx.currentTime + totalDur - 0.1) * 1000;
+      setTimeout(() => loop(startTime + totalDur), Math.max(delay, 0));
+    }
+
+    loop(ctx.currentTime + 0.1);
+    updateMusicBtn();
+  } catch(e) { console.log("Music error:", e); }
+}
+
+function stopBackgroundMusic() {
+  bgMusicPlaying = false;
+  bgMusicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  bgMusicNodes = [];
+  updateMusicBtn();
+}
+
+function toggleMusic() {
+  // On s'assure que l'audioCtx est résumé (nécessaire après interaction utilisateur)
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  if (bgMusicPlaying) {
+    stopBackgroundMusic();
+  } else {
+    startBackgroundMusic();
+  }
+}
+
+function updateMusicBtn() {
+  let btn = document.getElementById("musicToggleBtn");
+  if (!btn) return;
+  btn.innerText = bgMusicPlaying ? "🔊 Musique ON" : "🔇 Musique OFF";
+  btn.style.opacity = bgMusicPlaying ? "1" : "0.5";
 }
 
 function playWhoosh() {
@@ -239,7 +385,6 @@ function playDing() {
   } catch(e) {}
 }
 
-// Son spécial Full Diamant — cristallin + reverb simulé
 function playDiamond() {
   try {
     let ctx = getAudioCtx();
@@ -296,7 +441,6 @@ function getCardImage(card) {
   return localStorage.getItem("img_" + card.id) || null;
 }
 
-// MODIFIÉ — affiche 💎 pour la rareté 7, ⭐ pour les autres
 function starsDisplay(rarity) {
   if (rarity === 7) return "💎";
   return "⭐".repeat(rarity);
@@ -346,6 +490,10 @@ function openBooster() {
   lastBoosterOpen = now;
   localStorage.setItem("lastBoosterOpen", lastBoosterOpen);
   animateBoosterButton();
+  // Démarre la musique si pas encore lancée (première interaction utilisateur)
+  if (!bgMusicPlaying && audioCtx === null) {
+    startBackgroundMusic();
+  }
   playBoosterOpen();
   let pack = generatePack(6);
   saveCollection(pack);
@@ -379,7 +527,7 @@ function animateBoosterButton() {
 }
 
 // =====================================================
-// BOOSTER RENDER — FLIP 3D
+// BOOSTER RENDER — FLIP 3D + RÉCAPITULATIF FINAL
 // =====================================================
 
 function renderBooster(pack) {
@@ -389,6 +537,8 @@ function renderBooster(pack) {
   let currentIndex = 0;
   let isAnimating = false;
   let isFlipped = false;
+  // Suivi des cartes révélées pour le récap
+  let revealed = new Array(pack.length).fill(false);
 
   let counter = document.createElement("div");
   counter.className = "swipe-counter";
@@ -437,6 +587,12 @@ function renderBooster(pack) {
   swipeHint.innerText = "← swipe ou utilise les flèches →";
   container.appendChild(swipeHint);
 
+  // Placeholder récapitulatif — sera rempli à la fin
+  let recapContainer = document.createElement("div");
+  recapContainer.id = "boosterRecap";
+  recapContainer.style.display = "none";
+  container.appendChild(recapContainer);
+
   function fillCardBack(card) {
     let data = collection[card.id];
     let imgSrc = getCardImage(card);
@@ -447,6 +603,9 @@ function renderBooster(pack) {
 
     flipWrapper.className = "rarity-" + card.rarity;
     flipWrapper.id = "flipWrapper";
+
+    // On marque la carte comme révélée
+    revealed[currentIndex] = true;
 
     if (data && data.copies === 1) {
       let newTag = document.createElement("div");
@@ -465,7 +624,7 @@ function renderBooster(pack) {
     name.innerHTML = "<b>" + card.name + "</b>";
 
     let rarity = document.createElement("p");
-    rarity.innerText = starsDisplay(card.rarity); // MODIFIÉ — utilise starsDisplay
+    rarity.innerText = starsDisplay(card.rarity);
 
     let copies = document.createElement("p");
     copies.innerText = "x" + (data ? data.copies : 1);
@@ -473,6 +632,11 @@ function renderBooster(pack) {
     cardBack.appendChild(name);
     cardBack.appendChild(rarity);
     cardBack.appendChild(copies);
+
+    // Vérifier si toutes les cartes sont révélées → afficher le récap
+    if (revealed.every(r => r)) {
+      setTimeout(() => showRecap(pack), 800);
+    }
   }
 
   function doFlip() {
@@ -487,7 +651,7 @@ function renderBooster(pack) {
 
     let card = pack[currentIndex];
     if (card.rarity === 7) {
-      setTimeout(playDiamond, 300); // MODIFIÉ — son spécial pour le diamant
+      setTimeout(playDiamond, 300);
     } else if (card.rarity >= 5) {
       setTimeout(playDing, 300);
     }
@@ -589,6 +753,72 @@ function renderBooster(pack) {
 }
 
 // =====================================================
+// RÉCAPITULATIF BOOSTER — affiche les 6 cartes côte à côte
+// =====================================================
+
+function showRecap(pack) {
+  let recapContainer = document.getElementById("boosterRecap");
+  if (!recapContainer) return;
+
+  recapContainer.innerHTML = "";
+  recapContainer.style.display = "block";
+
+  // Titre
+  let title = document.createElement("div");
+  title.className = "recap-title";
+  title.innerText = "🎴 Récapitulatif du pack";
+  recapContainer.appendChild(title);
+
+  // Grille des 6 cartes
+  let grid = document.createElement("div");
+  grid.className = "recap-grid";
+  recapContainer.appendChild(grid);
+
+  pack.forEach((card, i) => {
+    let data = collection[card.id];
+    let imgSrc = getCardImage(card);
+
+    let el = document.createElement("div");
+    el.className = "recap-card rarity-" + card.rarity;
+    if (card.rarity === 6) el.classList.add("holo");
+    // Animation décalée pour un effet de reveal en cascade
+    el.style.animationDelay = (i * 0.1) + "s";
+
+    // Badge NEW
+    if (data && data.copies === 1) {
+      let badge = document.createElement("div");
+      badge.className = "recap-new-badge";
+      badge.innerText = "NEW";
+      el.appendChild(badge);
+    }
+
+    if (imgSrc) {
+      let img = document.createElement("img");
+      img.src = imgSrc;
+      el.appendChild(img);
+    } else {
+      let placeholder = document.createElement("div");
+      placeholder.className = "recap-placeholder";
+      placeholder.innerText = "🂠";
+      el.appendChild(placeholder);
+    }
+
+    let name = document.createElement("p");
+    name.innerHTML = "<b>" + card.name + "</b>";
+
+    let rarity = document.createElement("p");
+    rarity.innerText = starsDisplay(card.rarity);
+
+    el.appendChild(name);
+    el.appendChild(rarity);
+    grid.appendChild(el);
+  });
+
+  // Scroll vers le récap
+  setTimeout(() => recapContainer.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+}
+
+// =====================================================
 // COLLECTION RENDER
 // =====================================================
 
@@ -599,13 +829,11 @@ function renderCollection() {
   let count = 0;
   for (let c of cardsDB) { if (collection[c.id]) count++; }
 
-  // Header global
   let header = document.createElement("div");
   header.innerText = "📚 Collection : " + count + "/" + cardsDB.length;
   header.style.cssText = "text-align:center;font-size:18px;font-weight:bold;margin-bottom:12px;";
   container.appendChild(header);
 
-  // Compteur par rarété
   const rarityConfig = [
     { rarity: 1, label: "Commune",      color: "#888780", icon: "⭐" },
     { rarity: 2, label: "Peu commune",  color: "#378ADD", icon: "⭐⭐" },
@@ -681,7 +909,7 @@ function renderCollection() {
       text.innerHTML = "<b>" + card.name + "</b>";
 
       let rarity = document.createElement("p");
-      rarity.innerText = starsDisplay(card.rarity); // MODIFIÉ — utilise starsDisplay
+      rarity.innerText = starsDisplay(card.rarity);
 
       if (!data.copies) data.copies = 1;
       let copies = document.createElement("p");
@@ -749,3 +977,4 @@ function uploadImage() {
 
 renderCollection();
 startCooldown();
+updateMusicBtn();
