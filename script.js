@@ -105,7 +105,6 @@ let cardsDB = [
   { id: 88, name: "Pedophile Alternztive",    rarity: 5, url: "" },
   { id: 89, name: "Alcoolique",    rarity: 2, url: "" },
   { id: 90, name: "Photo de groupe",    rarity: 6, url: "" },
-
 ];
 
 // =====================================================
@@ -133,11 +132,8 @@ let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 // =====================================================
 
 function getCardImage(card) {
-  if (card.url && card.url.trim() !== "") {
-    return card.url.trim();
-  }
-  let stored = localStorage.getItem("img_" + card.id);
-  return stored || null;
+  if (card.url && card.url.trim() !== "") return card.url.trim();
+  return localStorage.getItem("img_" + card.id) || null;
 }
 
 // =====================================================
@@ -150,7 +146,7 @@ function showTab(tabId) {
 }
 
 // =====================================================
-// RANDOM RARITY SELECTION
+// RANDOM RARITY
 // =====================================================
 
 function getRandomRarity() {
@@ -162,10 +158,6 @@ function getRandomRarity() {
   }
   return 1;
 }
-
-// =====================================================
-// GET RANDOM CARD
-// =====================================================
 
 function getRandomCard() {
   let rarity = getRandomRarity();
@@ -198,19 +190,11 @@ function openBooster() {
   startCooldown();
 }
 
-// =====================================================
-// GENERATE PACK
-// =====================================================
-
 function generatePack(size) {
   let pack = [];
   for (let i = 0; i < size; i++) pack.push(getRandomCard());
   return pack;
 }
-
-// =====================================================
-// SAVE COLLECTION
-// =====================================================
 
 function saveCollection(pack) {
   pack.forEach(card => {
@@ -224,10 +208,6 @@ function saveCollection(pack) {
   localStorage.setItem("collection", JSON.stringify(collection));
 }
 
-// =====================================================
-// BOOSTER BUTTON ANIMATION
-// =====================================================
-
 function animateBoosterButton() {
   let btn = document.getElementById("openBoosterBtn");
   btn.classList.add("booster-open");
@@ -235,7 +215,7 @@ function animateBoosterButton() {
 }
 
 // =====================================================
-// BOOSTER RENDER — SWIPE CARD BY CARD
+// BOOSTER RENDER — FLIP 3D
 // =====================================================
 
 function renderBooster(pack) {
@@ -244,6 +224,7 @@ function renderBooster(pack) {
 
   let currentIndex = 0;
   let isAnimating = false;
+  let isFlipped = false;
 
   // Counter
   let counter = document.createElement("div");
@@ -251,149 +232,189 @@ function renderBooster(pack) {
   counter.innerText = "1 / " + pack.length;
   container.appendChild(counter);
 
-  // Swipe zone
+  // Swipe container (perspective parent)
   let swipeContainer = document.createElement("div");
   swipeContainer.id = "swipeContainer";
   container.appendChild(swipeContainer);
 
-  let cardEl = document.createElement("div");
-  cardEl.id = "swipeCard";
-  swipeContainer.appendChild(cardEl);
+  // Flip wrapper (l'élément qui tourne)
+  let flipWrapper = document.createElement("div");
+  flipWrapper.id = "flipWrapper";
+  swipeContainer.appendChild(flipWrapper);
 
-  // Arrow buttons
+  // Face avant = dos de carte
+  let cardFront = document.createElement("div");
+  cardFront.id = "cardFront";
+  cardFront.innerText = "🂠";
+  flipWrapper.appendChild(cardFront);
+
+  // Face arrière = contenu
+  let cardBack = document.createElement("div");
+  cardBack.id = "cardBack";
+  flipWrapper.appendChild(cardBack);
+
+  // Hint tap
+  let tapHint = document.createElement("div");
+  tapHint.className = "tap-hint";
+  tapHint.innerText = "Tape pour révéler ✨";
+  container.appendChild(tapHint);
+
+  // Arrows
   let arrows = document.createElement("div");
   arrows.className = "swipe-arrows";
 
   let prevBtn = document.createElement("button");
-  prevBtn.id = "prevBtn";
   prevBtn.innerText = "◀";
   prevBtn.disabled = true;
 
   let nextBtn = document.createElement("button");
-  nextBtn.id = "nextBtn";
   nextBtn.innerText = "▶";
+  nextBtn.disabled = true; // désactivé jusqu'au flip
 
   arrows.appendChild(prevBtn);
   arrows.appendChild(nextBtn);
   container.appendChild(arrows);
 
-  // Hint
-  let hint = document.createElement("div");
-  hint.className = "swipe-hint";
-  hint.innerText = "← swipe ou utilise les flèches →";
-  container.appendChild(hint);
+  // Hint swipe
+  let swipeHint = document.createElement("div");
+  swipeHint.className = "swipe-hint";
+  swipeHint.innerText = "← swipe ou utilise les flèches →";
+  container.appendChild(swipeHint);
 
   // -----------------------------------------------
-  // Render a card at given index
-  // direction: "left" (coming from right) or "right" (coming from left)
+  // Remplir le cardBack avec les infos de la carte
   // -----------------------------------------------
-  function renderCard(index, direction) {
-    if (isAnimating) return;
-    isAnimating = true;
-
-    let card = pack[index];
+  function fillCardBack(card) {
     let data = collection[card.id];
-    let isNew = data.copies === 1;
     let imgSrc = getCardImage(card);
 
-    // Build content into a temp div first so swap is instant
-    let newContent = document.createElement("div");
-    newContent.id = "swipeCard";
-    newContent.className = "card rarity-" + card.rarity;
-    if (card.rarity === 6) newContent.classList.add("holo");
+    cardBack.className = "rarity-" + card.rarity;
+    if (card.rarity === 6) cardBack.classList.add("holo");
+    cardBack.innerHTML = "";
 
-    // Override card animation so it doesn't fade-in on its own
-    newContent.style.animation = "none";
-    newContent.style.opacity = "1";
-    newContent.style.transform = "scale(1)";
+    // Appliquer la bordure de rareté sur le flipWrapper aussi
+    flipWrapper.className = "rarity-" + card.rarity;
+    flipWrapper.id = "flipWrapper";
 
-    if (isNew) {
+    if (data && data.copies === 1) {
       let newTag = document.createElement("div");
       newTag.innerText = "✨ NEW";
       newTag.style.cssText = "color:lime;font-weight:bold;font-size:14px;margin-bottom:6px;";
-      newContent.appendChild(newTag);
+      cardBack.appendChild(newTag);
     }
 
     if (imgSrc) {
       let img = document.createElement("img");
       img.src = imgSrc;
-      newContent.appendChild(img);
+      cardBack.appendChild(img);
     }
 
     let name = document.createElement("p");
     name.innerHTML = "<b>" + card.name + "</b>";
     let rarity = document.createElement("p");
     rarity.innerText = "⭐ " + card.rarity;
-    let copy = document.createElement("p");
-    copy.innerText = "x" + data.copies;
+    let copies = document.createElement("p");
+    copies.innerText = "x" + (data ? data.copies : 1);
 
-    newContent.appendChild(name);
-    newContent.appendChild(rarity);
-    newContent.appendChild(copy);
+    cardBack.appendChild(name);
+    cardBack.appendChild(rarity);
+    cardBack.appendChild(copies);
+  }
 
-    // Slide out current card
-    let outClass = (direction === "left") ? "swipe-left" : "swipe-right";
-    cardEl.classList.add(outClass);
+  // -----------------------------------------------
+  // Flip reveal (tap / clic)
+  // -----------------------------------------------
+  function doFlip() {
+    if (isAnimating || isFlipped) return;
+    isAnimating = true;
+    isFlipped = true;
+
+    fillCardBack(pack[currentIndex]);
+    flipWrapper.classList.add("flipped");
+    tapHint.style.opacity = "0";
+    nextBtn.disabled = (currentIndex >= pack.length - 1);
+    prevBtn.disabled = (currentIndex <= 0);
+
+    setTimeout(() => { isAnimating = false; }, 600);
+  }
+
+  flipWrapper.addEventListener("click", doFlip);
+
+  // Touch tap (pas un swipe)
+  let touchStartX2 = 0;
+  swipeContainer.addEventListener("touchstart", e => {
+    touchStartX2 = e.touches[0].clientX;
+  }, { passive: true });
+  swipeContainer.addEventListener("touchend", e => {
+    let diff = touchStartX2 - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      // C'est un swipe
+      if (diff > 0) goNext();
+      else goPrev();
+    } else {
+      // C'est un tap
+      doFlip();
+    }
+  });
+
+  // -----------------------------------------------
+  // Charger la prochaine carte avec animation
+  // -----------------------------------------------
+  function loadCard(index, direction) {
+    if (isAnimating) return;
+    isAnimating = true;
+    isFlipped = false;
+    nextBtn.disabled = true;
+    prevBtn.disabled = true;
+    tapHint.style.opacity = "1";
+
+    // Sortie de la carte actuelle
+    let exitClass = direction === "next" ? "exit-left" : "exit-right";
+    flipWrapper.classList.add(exitClass);
 
     setTimeout(() => {
-      // Swap card element
-      swipeContainer.replaceChild(newContent, cardEl);
-      cardEl = newContent;
+      // Reset
+      flipWrapper.className = "";
+      flipWrapper.id = "flipWrapper";
+      cardFront.innerText = "🂠";
+      cardBack.innerHTML = "";
 
-      // Position new card off-screen (opposite side), no transition
-      let inClass = (direction === "left") ? "from-right" : "from-left";
-      cardEl.classList.add(inClass);
+      // Entrer depuis le côté opposé
+      let enterClass = direction === "next" ? "enter-from-right" : "enter-from-left";
+      flipWrapper.classList.add(enterClass);
 
-      // Force reflow so the browser registers the off-screen position
-      void cardEl.offsetWidth;
+      void flipWrapper.offsetWidth;
 
-      // Slide in
-      cardEl.style.transition = "transform 0.25s ease, opacity 0.25s ease";
-      cardEl.classList.remove(inClass);
-
-      // Re-attach touch/mouse listeners to new card element
-      attachDragListeners();
+      flipWrapper.classList.remove(enterClass);
+      flipWrapper.classList.add("enter-active");
 
       counter.innerText = (index + 1) + " / " + pack.length;
-      prevBtn.disabled = (index === 0);
-      nextBtn.disabled = (index === pack.length - 1);
 
-      setTimeout(() => { isAnimating = false; }, 260);
-    }, 250);
+      setTimeout(() => {
+        flipWrapper.classList.remove("enter-active");
+        isAnimating = false;
+      }, 420);
+
+    }, 420);
   }
 
   // -----------------------------------------------
   // Navigation
   // -----------------------------------------------
   function goNext() {
-    if (isAnimating || currentIndex >= pack.length - 1) return;
+    if (isAnimating || !isFlipped || currentIndex >= pack.length - 1) return;
     currentIndex++;
-    renderCard(currentIndex, "left");
+    loadCard(currentIndex, "next");
   }
 
   function goPrev() {
-    if (isAnimating || currentIndex <= 0) return;
+    if (isAnimating || !isFlipped || currentIndex <= 0) return;
     currentIndex--;
-    renderCard(currentIndex, "right");
+    loadCard(currentIndex, "prev");
   }
 
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
-
-  // -----------------------------------------------
-  // Touch swipe
-  // -----------------------------------------------
-  let touchStartX = 0;
-
-  swipeContainer.addEventListener("touchstart", e => {
-    touchStartX = e.touches[0].clientX;
-  }, { passive: true });
-
-  swipeContainer.addEventListener("touchend", e => {
-    let diff = touchStartX - e.changedTouches[0].clientX;
-    if (diff > 50) goNext();
-    else if (diff < -50) goPrev();
-  });
 
   // -----------------------------------------------
   // Mouse drag
@@ -401,74 +422,26 @@ function renderBooster(pack) {
   let mouseStartX = 0;
   let dragging = false;
 
-  function attachDragListeners() {
-    cardEl.addEventListener("mousedown", e => {
-      mouseStartX = e.clientX;
-      dragging = true;
-      cardEl.style.cursor = "grabbing";
-    });
-  }
+  flipWrapper.addEventListener("mousedown", e => {
+    mouseStartX = e.clientX;
+    dragging = true;
+  });
 
   window.addEventListener("mouseup", e => {
     if (!dragging) return;
     dragging = false;
-    if (cardEl) cardEl.style.cursor = "grab";
     let diff = mouseStartX - e.clientX;
-    if (diff > 60) goNext();
-    else if (diff < -60) goPrev();
+    if (Math.abs(diff) > 60) {
+      if (diff > 0) goNext();
+      else goPrev();
+    } else {
+      doFlip();
+    }
   });
 
-  // -----------------------------------------------
-  // First render — slide in from right
-  // -----------------------------------------------
-  let firstCard = pack[0];
-  let firstData = collection[firstCard.id];
-  let firstImgSrc = getCardImage(firstCard);
-
-  cardEl.className = "card rarity-" + firstCard.rarity;
-  if (firstCard.rarity === 6) cardEl.classList.add("holo");
-  cardEl.style.animation = "none";
-  cardEl.style.opacity = "0";
-  cardEl.style.transform = "translateX(130%) rotate(15deg)";
-  cardEl.style.transition = "none";
-  cardEl.innerHTML = "";
-
-  if (firstData.copies === 1) {
-    let newTag = document.createElement("div");
-    newTag.innerText = "✨ NEW";
-    newTag.style.cssText = "color:lime;font-weight:bold;font-size:14px;margin-bottom:6px;";
-    cardEl.appendChild(newTag);
-  }
-
-  if (firstImgSrc) {
-    let img = document.createElement("img");
-    img.src = firstImgSrc;
-    cardEl.appendChild(img);
-  }
-
-  let firstName = document.createElement("p");
-  firstName.innerHTML = "<b>" + firstCard.name + "</b>";
-  let firstRarity = document.createElement("p");
-  firstRarity.innerText = "⭐ " + firstCard.rarity;
-  let firstCopy = document.createElement("p");
-  firstCopy.innerText = "x" + firstData.copies;
-  cardEl.appendChild(firstName);
-  cardEl.appendChild(firstRarity);
-  cardEl.appendChild(firstCopy);
-
-  attachDragListeners();
-
-  // Trigger slide-in animation on next frame
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      cardEl.style.transition = "transform 0.35s ease, opacity 0.35s ease";
-      cardEl.style.opacity = "1";
-      cardEl.style.transform = "translateX(0) rotate(0deg)";
-      setTimeout(() => { isAnimating = false; }, 360);
-    });
-  });
-
-  nextBtn.disabled = (pack.length <= 1);
+  // Première carte prête
+  counter.innerText = "1 / " + pack.length;
+  nextBtn.disabled = true;
   prevBtn.disabled = true;
 }
 
@@ -501,7 +474,6 @@ function renderCollection() {
       if (card.rarity === 6) el.classList.add("holo");
 
       let imgSrc = getCardImage(card);
-
       if (imgSrc) {
         let image = document.createElement("img");
         image.src = imgSrc;
@@ -545,19 +517,14 @@ function startCooldown() {
 }
 
 // =====================================================
-// IMAGE UPLOAD (URL ou fichier)
+// IMAGE UPLOAD
 // =====================================================
 
 function uploadImage() {
   let id = document.getElementById("cardIdInput").value.trim();
-
-  if (!id) {
-    alert("Entre un ID de carte.");
-    return;
-  }
+  if (!id) { alert("Entre un ID de carte."); return; }
 
   let url = document.getElementById("imgUrlInput").value.trim();
-
   if (url !== "") {
     localStorage.setItem("img_" + id, url);
     renderCollection();
@@ -566,10 +533,7 @@ function uploadImage() {
   }
 
   let file = document.getElementById("imgInput").files[0];
-  if (!file) {
-    alert("Entre une URL ou choisis un fichier.");
-    return;
-  }
+  if (!file) { alert("Entre une URL ou choisis un fichier."); return; }
 
   let reader = new FileReader();
   reader.onload = function(e) {

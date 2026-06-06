@@ -190,7 +190,7 @@ body {
 }
 
 /* ===================================================== */
-/* HOLO EFFECT — arc-en-ciel uniquement, pas de box-shadow ici */
+/* HOLO EFFECT */
 /* ===================================================== */
 
 .holo::after {
@@ -360,7 +360,6 @@ body {
   box-shadow: 0 0 12px rgba(239,159,39,0.5);
 }
 
-/* Rareté 6 : cardAppear en premier, puis rarityGlow en boucle après */
 .rarity-6 {
   border: 3px solid gold;
   animation: cardAppear 0.35s ease forwards, rarityGlow 1.5s ease-in-out 0.35s infinite;
@@ -375,65 +374,71 @@ body {
   }
 }
 
-/* Carte holo dans le booster (pas de cardAppear, animation gérée en JS) */
 #swipeCard.rarity-6 {
   border: 3px solid gold;
   animation: rarityGlow 1.5s ease-in-out infinite;
 }
 
 /* ===================================================== */
-/* SWIPE BOOSTER SYSTEM */
+/* SWIPE BOOSTER SYSTEM — FLIP 3D */
 /* ===================================================== */
 
 #swipeContainer {
   position: relative;
   width: 100%;
-  min-height: 320px;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 15px;
   touch-action: pan-y;
+  /* Perspective pour l'effet 3D */
+  perspective: 1000px;
 }
 
-#swipeCard {
+/* Wrapper qui tourne en 3D */
+#flipWrapper {
   width: 85%;
   max-width: 320px;
-  background: rgba(255,255,255,0.07);
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+/* Face avant (dos de la carte — ce qu'on voit avant reveal) */
+#cardFront {
+  width: 100%;
   border-radius: 18px;
   padding: 20px;
   text-align: center;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-  cursor: grab;
-  user-select: none;
-  animation: none;
-  opacity: 1;
-  transform: scale(1);
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  background: linear-gradient(135deg, #1a1f3c, #0b0d18);
+  border: 2px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  font-size: 48px;
 }
 
-#swipeCard.swipe-left {
-  transform: translateX(-130%) rotate(-15deg);
-  opacity: 0;
+/* Face arrière (contenu de la carte) */
+#cardBack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  transform: rotateY(180deg);
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
 }
 
-#swipeCard.swipe-right {
-  transform: translateX(130%) rotate(15deg);
-  opacity: 0;
-}
-
-#swipeCard.from-right {
-  transform: translateX(130%) rotate(15deg);
-  opacity: 0;
-  transition: none;
-}
-
-#swipeCard.from-left {
-  transform: translateX(-130%) rotate(-15deg);
-  opacity: 0;
-  transition: none;
-}
-
-#swipeCard img {
+#cardBack img {
   width: 100%;
   aspect-ratio: 4/3;
   object-fit: cover;
@@ -441,6 +446,51 @@ body {
   margin-bottom: 10px;
   pointer-events: none;
   display: block;
+}
+
+#cardBack p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+/* État retourné */
+#flipWrapper.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Animation de sortie vers la gauche après flip */
+#flipWrapper.exit-left {
+  transform: rotateY(180deg) translateX(50%) scale(0.8);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+/* Animation de sortie vers la droite après flip */
+#flipWrapper.exit-right {
+  transform: rotateY(180deg) translateX(-50%) scale(0.8);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+/* Entrée depuis la gauche (face verso visible) */
+#flipWrapper.enter-from-left {
+  transform: rotateY(-180deg) translateX(-60%);
+  opacity: 0;
+  transition: none;
+}
+
+/* Entrée depuis la droite (face verso visible) */
+#flipWrapper.enter-from-right {
+  transform: rotateY(180deg) translateX(60%);
+  opacity: 0;
+  transition: none;
+}
+
+/* Slide-in final vers position neutre flippée */
+#flipWrapper.enter-active {
+  transform: rotateY(180deg) translateX(0);
+  opacity: 1;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
 }
 
 .swipe-hint {
@@ -458,6 +508,15 @@ body {
   color: gold;
   margin-top: 10px;
   letter-spacing: 2px;
+}
+
+.tap-hint {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 6px;
+  letter-spacing: 1px;
+  transition: opacity 0.3s;
 }
 
 .swipe-arrows {
