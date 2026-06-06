@@ -634,11 +634,19 @@ function renderCollection() {
     progressBlock.appendChild(row);
   });
 
-  container.appendChild(progressBlock);
+  // Sidebar fixe à gauche
+  let sidebar = document.createElement("div");
+  sidebar.style.cssText = "width:140px;flex-shrink:0;position:sticky;top:0;align-self:flex-start;";
+  sidebar.appendChild(progressBlock);
+  container.appendChild(sidebar);
 
-  let sep = document.createElement("hr");
-  sep.style.cssText = "border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0 0 12px 0;";
-  container.appendChild(sep);
+  // Grille à droite
+  let gridWrapper = document.createElement("div");
+  gridWrapper.style.cssText = "flex:1;min-width:0;";
+  container.appendChild(gridWrapper);
+
+  // Séparateur vertical
+  container.style.cssText = "display:flex;gap:12px;align-items:flex-start;";
 
   cardsDB.forEach(card => {
     let data = collection[card.id];
@@ -673,7 +681,7 @@ function renderCollection() {
       el.appendChild(copies);
     }
 
-    container.appendChild(el);
+    gridWrapper.appendChild(el);
   });
 }
 
