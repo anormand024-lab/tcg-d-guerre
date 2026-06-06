@@ -380,6 +380,56 @@ body {
   animation: rarityGlow 1.5s ease-in-out infinite;
 }
 
+
+/* ===================================================== */
+/* RARITY 7 — FULL DIAMANT */
+/* ===================================================== */
+
+.rarity-7 {
+  background: linear-gradient(135deg, #0a1628, #0d2347, #0a1628) !important;
+  border: 3px solid #00cfff !important;
+  animation: cardAppear 0.35s ease forwards, diamondGlow 2s ease-in-out infinite;
+}
+
+@keyframes diamondGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 14px rgba(0,207,255,0.6),
+      0 0 30px rgba(0,207,255,0.3),
+      inset 0 0 20px rgba(0,150,255,0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 32px rgba(0,207,255,1),
+      0 0 60px rgba(0,150,255,0.5),
+      inset 0 0 30px rgba(0,180,255,0.15);
+  }
+}
+
+.rarity-7::before {
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(0,207,255,0.25) 35%,
+    rgba(255,255,255,0.35) 50%,
+    rgba(0,150,255,0.25) 65%,
+    transparent 80%
+  ) !important;
+  animation: diamondSheen 1.8s linear infinite !important;
+}
+
+@keyframes diamondSheen {
+  0%   { transform: translateX(-120%) rotate(15deg); }
+  100% { transform: translateX(120%) rotate(15deg); }
+}
+
+#swipeContainer .rarity-7,
+#flipWrapper.rarity-7 {
+  background: linear-gradient(135deg, #0a1628, #0d2347, #0a1628) !important;
+  border: 3px solid #00cfff !important;
+  animation: diamondGlow 2s ease-in-out infinite;
+}
+
 /* ===================================================== */
 /* SWIPE BOOSTER SYSTEM — FLIP 3D, carte plus grande */
 /* ===================================================== */

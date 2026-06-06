@@ -105,6 +105,9 @@ let cardsDB = [
   { id: 88, name: "Pedophile Alternztive",    rarity: 5, url: "" },
   { id: 89, name: "Alcoolique",    rarity: 2, url: "" },
   { id: 90, name: "Photo de groupe",    rarity: 6, url: "" },
+
+  // ==================== RARETÉ 7 — FULL DIAMANT ====================
+  { id: 91, name: "Full Diamant",    rarity: 7, url: "" },
 ];
 
 // =====================================================
@@ -112,12 +115,13 @@ let cardsDB = [
 // =====================================================
 
 let dropRates = [
-  { rarity: 1, chance: 45 },
-  { rarity: 2, chance: 25 },
-  { rarity: 3, chance: 15 },
-  { rarity: 4, chance: 10 },
-  { rarity: 5, chance: 4  },
-  { rarity: 6, chance: 1  }
+  { rarity: 1, chance: 44.9 },
+  { rarity: 2, chance: 25   },
+  { rarity: 3, chance: 15   },
+  { rarity: 4, chance: 10   },
+  { rarity: 5, chance: 4    },
+  { rarity: 6, chance: 1    },
+  { rarity: 7, chance: 0.1  }
 ];
 
 // =====================================================
@@ -138,7 +142,6 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-// Bruit blanc court — son de "whoosh" de carte qui passe
 function playWhoosh() {
   try {
     let ctx = getAudioCtx();
@@ -150,18 +153,14 @@ function playWhoosh() {
     }
     let source = ctx.createBufferSource();
     source.buffer = buffer;
-
-    // Filtre passe-haut pour son "air"
     let filter = ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.setValueAtTime(800, ctx.currentTime);
     filter.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.12);
     filter.Q.value = 0.8;
-
     let gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
     gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
-
     source.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(ctx.destination);
@@ -169,23 +168,16 @@ function playWhoosh() {
   } catch(e) {}
 }
 
-// Son de flip — "fwip" rapide
 function playFlip() {
   try {
     let ctx = getAudioCtx();
-
-    // Oscillateur descendant rapide
     let osc = ctx.createOscillator();
     let gain = ctx.createGain();
-
     osc.type = "sine";
     osc.frequency.setValueAtTime(900, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.08);
-
     gain.gain.setValueAtTime(0.25, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-
-    // Bruit court par dessus
     let bufferSize = ctx.sampleRate * 0.06;
     let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     let d = buffer.getChannelData(0);
@@ -197,36 +189,29 @@ function playFlip() {
     let noiseGain = ctx.createGain();
     noiseGain.gain.setValueAtTime(0.15, ctx.currentTime);
     noiseGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.06);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
     noise.connect(noiseGain);
     noiseGain.connect(ctx.destination);
-
     osc.start();
     osc.stop(ctx.currentTime + 0.12);
     noise.start();
   } catch(e) {}
 }
 
-// Son "ding" — carte rare révélée
 function playDing() {
   try {
     let ctx = getAudioCtx();
-
     let freqs = [880, 1100, 1320];
     freqs.forEach((freq, i) => {
       let osc = ctx.createOscillator();
       let gain = ctx.createGain();
-
       osc.type = "sine";
       osc.frequency.value = freq;
-
       let startTime = ctx.currentTime + i * 0.06;
       gain.gain.setValueAtTime(0, startTime);
       gain.gain.linearRampToValueAtTime(0.2 - i * 0.04, startTime + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
-
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(startTime);
@@ -235,12 +220,31 @@ function playDing() {
   } catch(e) {}
 }
 
-// Son "ouverture booster" — rumble + whoosh
+// Son spécial Full Diamant — cristallin + reverb simulé
+function playDiamond() {
+  try {
+    let ctx = getAudioCtx();
+    let freqs = [1047, 1319, 1568, 2093];
+    freqs.forEach((freq, i) => {
+      let osc = ctx.createOscillator();
+      let gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      let startTime = ctx.currentTime + i * 0.09;
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.18 - i * 0.03, startTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 1.4);
+    });
+  } catch(e) {}
+}
+
 function playBoosterOpen() {
   try {
     let ctx = getAudioCtx();
-
-    // Rumble grave
     let bufferSize = ctx.sampleRate * 0.3;
     let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     let d = buffer.getChannelData(0);
@@ -249,22 +253,17 @@ function playBoosterOpen() {
     }
     let noise = ctx.createBufferSource();
     noise.buffer = buffer;
-
     let filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(120, ctx.currentTime);
     filter.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3);
-
     let gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
     gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
-
     noise.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(ctx.destination);
     noise.start();
-
-    // Whoosh par dessus
     setTimeout(playWhoosh, 150);
   } catch(e) {}
 }
@@ -278,8 +277,9 @@ function getCardImage(card) {
   return localStorage.getItem("img_" + card.id) || null;
 }
 
-// Génère les étoiles en répétant l'emoji
+// MODIFIÉ — affiche 💎 pour la rareté 7, ⭐ pour les autres
 function starsDisplay(rarity) {
+  if (rarity === 7) return "💎";
   return "⭐".repeat(rarity);
 }
 
@@ -319,18 +319,15 @@ function getRandomCard() {
 function openBooster() {
   let now = Date.now();
   let cooldown = 40000;
-
   if (now - lastBoosterOpen < cooldown) {
     let remaining = Math.ceil((cooldown - (now - lastBoosterOpen)) / 1000);
     document.getElementById("cooldown").innerText = "Cooldown : " + remaining + "s";
     return;
   }
-
   lastBoosterOpen = now;
   localStorage.setItem("lastBoosterOpen", lastBoosterOpen);
   animateBoosterButton();
   playBoosterOpen();
-
   let pack = generatePack(6);
   saveCollection(pack);
   renderBooster(pack);
@@ -374,40 +371,33 @@ function renderBooster(pack) {
   let isAnimating = false;
   let isFlipped = false;
 
-  // Counter
   let counter = document.createElement("div");
   counter.className = "swipe-counter";
   counter.innerText = "1 / " + pack.length;
   container.appendChild(counter);
 
-  // Swipe container
   let swipeContainer = document.createElement("div");
   swipeContainer.id = "swipeContainer";
   container.appendChild(swipeContainer);
 
-  // Flip wrapper
   let flipWrapper = document.createElement("div");
   flipWrapper.id = "flipWrapper";
   swipeContainer.appendChild(flipWrapper);
 
-  // Face avant = dos de carte
   let cardFront = document.createElement("div");
   cardFront.id = "cardFront";
   cardFront.innerText = "🂠";
   flipWrapper.appendChild(cardFront);
 
-  // Face arrière = contenu
   let cardBack = document.createElement("div");
   cardBack.id = "cardBack";
   flipWrapper.appendChild(cardBack);
 
-  // Tap hint
   let tapHint = document.createElement("div");
   tapHint.className = "tap-hint";
   tapHint.innerText = "Tape pour révéler ✨";
   container.appendChild(tapHint);
 
-  // Arrows
   let arrows = document.createElement("div");
   arrows.className = "swipe-arrows";
 
@@ -423,15 +413,11 @@ function renderBooster(pack) {
   arrows.appendChild(nextBtn);
   container.appendChild(arrows);
 
-  // Swipe hint
   let swipeHint = document.createElement("div");
   swipeHint.className = "swipe-hint";
   swipeHint.innerText = "← swipe ou utilise les flèches →";
   container.appendChild(swipeHint);
 
-  // -----------------------------------------------
-  // Remplir le cardBack
-  // -----------------------------------------------
   function fillCardBack(card) {
     let data = collection[card.id];
     let imgSrc = getCardImage(card);
@@ -460,7 +446,7 @@ function renderBooster(pack) {
     name.innerHTML = "<b>" + card.name + "</b>";
 
     let rarity = document.createElement("p");
-    rarity.innerText = starsDisplay(card.rarity);
+    rarity.innerText = starsDisplay(card.rarity); // MODIFIÉ — utilise starsDisplay
 
     let copies = document.createElement("p");
     copies.innerText = "x" + (data ? data.copies : 1);
@@ -470,9 +456,6 @@ function renderBooster(pack) {
     cardBack.appendChild(copies);
   }
 
-  // -----------------------------------------------
-  // Flip reveal
-  // -----------------------------------------------
   function doFlip() {
     if (isAnimating || isFlipped) return;
     isAnimating = true;
@@ -483,9 +466,10 @@ function renderBooster(pack) {
     flipWrapper.classList.add("flipped");
     tapHint.style.opacity = "0";
 
-    // Son ding pour les cartes rares (rareté 5+)
     let card = pack[currentIndex];
-    if (card.rarity >= 5) {
+    if (card.rarity === 7) {
+      setTimeout(playDiamond, 300); // MODIFIÉ — son spécial pour le diamant
+    } else if (card.rarity >= 5) {
       setTimeout(playDing, 300);
     }
 
@@ -497,7 +481,6 @@ function renderBooster(pack) {
 
   flipWrapper.addEventListener("click", doFlip);
 
-  // Touch
   let touchStartX2 = 0;
   swipeContainer.addEventListener("touchstart", e => {
     touchStartX2 = e.touches[0].clientX;
@@ -512,9 +495,6 @@ function renderBooster(pack) {
     }
   });
 
-  // -----------------------------------------------
-  // Charger la prochaine carte
-  // -----------------------------------------------
   function loadCard(index, direction) {
     if (isAnimating) return;
     isAnimating = true;
@@ -549,9 +529,6 @@ function renderBooster(pack) {
     }, 420);
   }
 
-  // -----------------------------------------------
-  // Navigation
-  // -----------------------------------------------
   function goNext() {
     if (isAnimating || !isFlipped || currentIndex >= pack.length - 1) return;
     currentIndex++;
@@ -567,7 +544,6 @@ function renderBooster(pack) {
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
 
-  // Mouse drag
   let mouseStartX = 0;
   let dragging = false;
 
@@ -632,7 +608,7 @@ function renderCollection() {
       text.innerHTML = "<b>" + card.name + "</b>";
 
       let rarity = document.createElement("p");
-      rarity.innerText = starsDisplay(card.rarity);
+      rarity.innerText = starsDisplay(card.rarity); // MODIFIÉ — utilise starsDisplay
 
       if (!data.copies) data.copies = 1;
       let copies = document.createElement("p");
