@@ -99,7 +99,7 @@ let cardsDB = [
   { id: 82, name: "Consanguinité",    rarity: 6, url: "https://i.postimg.cc/bNvWMDg6/IMG-5530.jpg" },
   { id: 83, name: "Consanguinité alternztive",    rarity: 6, url: "" },
   { id: 84, name: "Tantine",    rarity: 5, url: "" },
-  { id: 85, name: "Moïse",    rarity: 3, url: "" },
+  { id: 85, name: "Moïse",    rarity: 3, url: "https://i.postimg.cc/ZRkmqRnQ/Screenshot-20260422-001107-Discord.jpg" },
   { id: 86, name: "Bite de negro",    rarity: 3, url: "" },
   { id: 87, name: "Pedophile",    rarity: 4, url: "https://i.postimg.cc/bJKhsvvW/Screenshot-20251231-214118-Discord.jpg" },
   { id: 88, name: "Pedophile Alternztive",    rarity: 5, url: "" },
