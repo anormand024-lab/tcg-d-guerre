@@ -580,11 +580,65 @@ function renderCollection() {
   let count = 0;
   for (let c of cardsDB) { if (collection[c.id]) count++; }
 
+  // Header global
   let header = document.createElement("div");
   header.innerText = "📚 Collection : " + count + "/" + cardsDB.length;
-  header.style.textAlign = "center";
-  header.style.fontSize = "18px";
+  header.style.cssText = "text-align:center;font-size:18px;font-weight:bold;margin-bottom:12px;";
   container.appendChild(header);
+
+  // Compteur par rarété
+  const rarityConfig = [
+    { rarity: 1, label: "Commune",      color: "#888780", icon: "⭐" },
+    { rarity: 2, label: "Peu commune",  color: "#378ADD", icon: "⭐⭐" },
+    { rarity: 3, label: "Rare",         color: "#1D9E75", icon: "⭐⭐⭐" },
+    { rarity: 4, label: "Épique",       color: "#7F77DD", icon: "⭐⭐⭐⭐" },
+    { rarity: 5, label: "Légendaire",   color: "#EF9F27", icon: "⭐⭐⭐⭐⭐" },
+    { rarity: 6, label: "Secrète",      color: "gold",    icon: "⭐⭐⭐⭐⭐⭐" },
+    { rarity: 7, label: "Full Diamant", color: "#00cfff", icon: "💎" },
+  ];
+
+  let progressBlock = document.createElement("div");
+  progressBlock.style.cssText = "margin-bottom:16px;display:flex;flex-direction:column;gap:8px;padding:0 4px;";
+
+  rarityConfig.forEach(cfg => {
+    let total = cardsDB.filter(c => c.rarity === cfg.rarity).length;
+    let owned = cardsDB.filter(c => c.rarity === cfg.rarity && collection[c.id]).length;
+    let pct   = total > 0 ? Math.round((owned / total) * 100) : 0;
+
+    let row = document.createElement("div");
+    row.style.cssText = "display:flex;flex-direction:column;gap:4px;";
+
+    let labelRow = document.createElement("div");
+    labelRow.style.cssText = "display:flex;justify-content:space-between;align-items:center;font-size:12px;";
+    labelRow.innerHTML =
+      "<span style='color:" + cfg.color + ";font-weight:bold;'>" + cfg.icon + " " + cfg.label + "</span>" +
+      "<span style='color:rgba(255,255,255,0.6);'>" + owned + " / " + total + "</span>";
+
+    let barBg = document.createElement("div");
+    barBg.style.cssText = "width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;";
+
+    let barFill = document.createElement("div");
+    barFill.style.cssText =
+      "height:100%;border-radius:99px;transition:width 0.6s ease;" +
+      "width:" + pct + "%;" +
+      "background:" + cfg.color + ";";
+    if (cfg.rarity === 7) {
+      barFill.style.background = "linear-gradient(90deg, #00cfff, #ffffff, #00cfff)";
+      barFill.style.backgroundSize = "200% 100%";
+      barFill.style.animation = "diamondBar 2s linear infinite";
+    }
+
+    barBg.appendChild(barFill);
+    row.appendChild(labelRow);
+    row.appendChild(barBg);
+    progressBlock.appendChild(row);
+  });
+
+  container.appendChild(progressBlock);
+
+  let sep = document.createElement("hr");
+  sep.style.cssText = "border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0 0 12px 0;";
+  container.appendChild(sep);
 
   cardsDB.forEach(card => {
     let data = collection[card.id];
