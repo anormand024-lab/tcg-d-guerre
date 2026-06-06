@@ -118,6 +118,15 @@ let cardsDB = [
   { id: 99, name: "Pont de Moïse",   rarity: 4, url: "" },
   { id: 100, name: "Affronte les arabes", rarity: 3, url: "" },
   { id: 101, name: "Judicael", rarity: 1, url: "" },
+  { id: 102, name: "Gros dormeur 2", rarity: 2, url: "" },
+  { id: 103, name: "fan de litterature", rarity: 1, url: "" },
+  { id: 104, name: "Le Singe", rarity: 3, url: "" },
+  { id: 105, name: "Papy Junior", rarity: 2, url: "" },
+  { id: 106, name: "On en a marre de pauvres", rarity: 3, url: "" },
+  { id: 107, name: "Anael", rarity: 1, url: "" },
+  { id: 108, name: "Le Coach", rarity: 1, url: "" },
+  { id: 109, name: "Le salut interdit", rarity: 1, url: "" },
+  { id: 110, name: "Léna Zi", rarity: 2, url: "" },
 ];
 
 // =====================================================
