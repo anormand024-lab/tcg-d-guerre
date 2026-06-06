@@ -132,7 +132,7 @@ body {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
   margin-top: 15px;
   padding-bottom: 20px;
   overflow-y: auto;
@@ -242,9 +242,9 @@ body {
 
 .card img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
-  object-position: center;
+  object-position: center top;
   border-radius: 10px;
   margin-bottom: 5px;
   display: block;
@@ -394,7 +394,7 @@ body {
 #swipeContainer {
   position: relative;
   width: 100%;
-  min-height: 440px;
+  min-height: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -403,8 +403,8 @@ body {
 }
 
 #flipWrapper {
-  width: 92%;
-  max-width: 380px;
+  width: 75%;
+  max-width: 300px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
@@ -422,8 +422,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 280px;
-  font-size: 80px;
+  min-height: 240px;
+  font-size: 72px;
 }
 
 #cardBack {
@@ -521,8 +521,8 @@ body {
 .swipe-arrows {
   display: flex;
   justify-content: space-between;
-  width: 92%;
-  max-width: 380px;
+  width: 75%;
+  max-width: 300px;
   margin-top: 12px;
 }
 
