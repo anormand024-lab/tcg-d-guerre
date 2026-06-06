@@ -128,12 +128,159 @@ let collection = JSON.parse(localStorage.getItem("collection")) || {};
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
-// GET CARD IMAGE
+// AUDIO SYSTEM — Web Audio API TCG sounds
+// =====================================================
+
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Bruit blanc court — son de "whoosh" de carte qui passe
+function playWhoosh() {
+  try {
+    let ctx = getAudioCtx();
+    let bufferSize = ctx.sampleRate * 0.12;
+    let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    let data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+    }
+    let source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    // Filtre passe-haut pour son "air"
+    let filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(800, ctx.currentTime);
+    filter.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.12);
+    filter.Q.value = 0.8;
+
+    let gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
+
+    source.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    source.start();
+  } catch(e) {}
+}
+
+// Son de flip — "fwip" rapide
+function playFlip() {
+  try {
+    let ctx = getAudioCtx();
+
+    // Oscillateur descendant rapide
+    let osc = ctx.createOscillator();
+    let gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(900, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.08);
+
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+    // Bruit court par dessus
+    let bufferSize = ctx.sampleRate * 0.06;
+    let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    let d = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      d[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    }
+    let noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    let noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.15, ctx.currentTime);
+    noiseGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.06);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    noise.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+    noise.start();
+  } catch(e) {}
+}
+
+// Son "ding" — carte rare révélée
+function playDing() {
+  try {
+    let ctx = getAudioCtx();
+
+    let freqs = [880, 1100, 1320];
+    freqs.forEach((freq, i) => {
+      let osc = ctx.createOscillator();
+      let gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+
+      let startTime = ctx.currentTime + i * 0.06;
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.2 - i * 0.04, startTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.7);
+    });
+  } catch(e) {}
+}
+
+// Son "ouverture booster" — rumble + whoosh
+function playBoosterOpen() {
+  try {
+    let ctx = getAudioCtx();
+
+    // Rumble grave
+    let bufferSize = ctx.sampleRate * 0.3;
+    let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    let d = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.sin(i / bufferSize * Math.PI);
+    }
+    let noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    let filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(120, ctx.currentTime);
+    filter.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3);
+
+    let gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
+
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    noise.start();
+
+    // Whoosh par dessus
+    setTimeout(playWhoosh, 150);
+  } catch(e) {}
+}
+
+// =====================================================
+// HELPERS
 // =====================================================
 
 function getCardImage(card) {
   if (card.url && card.url.trim() !== "") return card.url.trim();
   return localStorage.getItem("img_" + card.id) || null;
+}
+
+// Génère les étoiles en répétant l'emoji
+function starsDisplay(rarity) {
+  return "⭐".repeat(rarity);
 }
 
 // =====================================================
@@ -182,6 +329,7 @@ function openBooster() {
   lastBoosterOpen = now;
   localStorage.setItem("lastBoosterOpen", lastBoosterOpen);
   animateBoosterButton();
+  playBoosterOpen();
 
   let pack = generatePack(6);
   saveCollection(pack);
@@ -232,12 +380,12 @@ function renderBooster(pack) {
   counter.innerText = "1 / " + pack.length;
   container.appendChild(counter);
 
-  // Swipe container (perspective parent)
+  // Swipe container
   let swipeContainer = document.createElement("div");
   swipeContainer.id = "swipeContainer";
   container.appendChild(swipeContainer);
 
-  // Flip wrapper (l'élément qui tourne)
+  // Flip wrapper
   let flipWrapper = document.createElement("div");
   flipWrapper.id = "flipWrapper";
   swipeContainer.appendChild(flipWrapper);
@@ -253,7 +401,7 @@ function renderBooster(pack) {
   cardBack.id = "cardBack";
   flipWrapper.appendChild(cardBack);
 
-  // Hint tap
+  // Tap hint
   let tapHint = document.createElement("div");
   tapHint.className = "tap-hint";
   tapHint.innerText = "Tape pour révéler ✨";
@@ -269,20 +417,20 @@ function renderBooster(pack) {
 
   let nextBtn = document.createElement("button");
   nextBtn.innerText = "▶";
-  nextBtn.disabled = true; // désactivé jusqu'au flip
+  nextBtn.disabled = true;
 
   arrows.appendChild(prevBtn);
   arrows.appendChild(nextBtn);
   container.appendChild(arrows);
 
-  // Hint swipe
+  // Swipe hint
   let swipeHint = document.createElement("div");
   swipeHint.className = "swipe-hint";
   swipeHint.innerText = "← swipe ou utilise les flèches →";
   container.appendChild(swipeHint);
 
   // -----------------------------------------------
-  // Remplir le cardBack avec les infos de la carte
+  // Remplir le cardBack
   // -----------------------------------------------
   function fillCardBack(card) {
     let data = collection[card.id];
@@ -292,7 +440,6 @@ function renderBooster(pack) {
     if (card.rarity === 6) cardBack.classList.add("holo");
     cardBack.innerHTML = "";
 
-    // Appliquer la bordure de rareté sur le flipWrapper aussi
     flipWrapper.className = "rarity-" + card.rarity;
     flipWrapper.id = "flipWrapper";
 
@@ -311,8 +458,10 @@ function renderBooster(pack) {
 
     let name = document.createElement("p");
     name.innerHTML = "<b>" + card.name + "</b>";
+
     let rarity = document.createElement("p");
-    rarity.innerText = "⭐ " + card.rarity;
+    rarity.innerText = starsDisplay(card.rarity);
+
     let copies = document.createElement("p");
     copies.innerText = "x" + (data ? data.copies : 1);
 
@@ -322,16 +471,24 @@ function renderBooster(pack) {
   }
 
   // -----------------------------------------------
-  // Flip reveal (tap / clic)
+  // Flip reveal
   // -----------------------------------------------
   function doFlip() {
     if (isAnimating || isFlipped) return;
     isAnimating = true;
     isFlipped = true;
 
+    playFlip();
     fillCardBack(pack[currentIndex]);
     flipWrapper.classList.add("flipped");
     tapHint.style.opacity = "0";
+
+    // Son ding pour les cartes rares (rareté 5+)
+    let card = pack[currentIndex];
+    if (card.rarity >= 5) {
+      setTimeout(playDing, 300);
+    }
+
     nextBtn.disabled = (currentIndex >= pack.length - 1);
     prevBtn.disabled = (currentIndex <= 0);
 
@@ -340,7 +497,7 @@ function renderBooster(pack) {
 
   flipWrapper.addEventListener("click", doFlip);
 
-  // Touch tap (pas un swipe)
+  // Touch
   let touchStartX2 = 0;
   swipeContainer.addEventListener("touchstart", e => {
     touchStartX2 = e.touches[0].clientX;
@@ -348,17 +505,15 @@ function renderBooster(pack) {
   swipeContainer.addEventListener("touchend", e => {
     let diff = touchStartX2 - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
-      // C'est un swipe
       if (diff > 0) goNext();
       else goPrev();
     } else {
-      // C'est un tap
       doFlip();
     }
   });
 
   // -----------------------------------------------
-  // Charger la prochaine carte avec animation
+  // Charger la prochaine carte
   // -----------------------------------------------
   function loadCard(index, direction) {
     if (isAnimating) return;
@@ -368,23 +523,20 @@ function renderBooster(pack) {
     prevBtn.disabled = true;
     tapHint.style.opacity = "1";
 
-    // Sortie de la carte actuelle
+    playWhoosh();
+
     let exitClass = direction === "next" ? "exit-left" : "exit-right";
     flipWrapper.classList.add(exitClass);
 
     setTimeout(() => {
-      // Reset
       flipWrapper.className = "";
       flipWrapper.id = "flipWrapper";
       cardFront.innerText = "🂠";
       cardBack.innerHTML = "";
 
-      // Entrer depuis le côté opposé
       let enterClass = direction === "next" ? "enter-from-right" : "enter-from-left";
       flipWrapper.classList.add(enterClass);
-
       void flipWrapper.offsetWidth;
-
       flipWrapper.classList.remove(enterClass);
       flipWrapper.classList.add("enter-active");
 
@@ -394,7 +546,6 @@ function renderBooster(pack) {
         flipWrapper.classList.remove("enter-active");
         isAnimating = false;
       }, 420);
-
     }, 420);
   }
 
@@ -416,9 +567,7 @@ function renderBooster(pack) {
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
 
-  // -----------------------------------------------
   // Mouse drag
-  // -----------------------------------------------
   let mouseStartX = 0;
   let dragging = false;
 
@@ -439,7 +588,6 @@ function renderBooster(pack) {
     }
   });
 
-  // Première carte prête
   counter.innerText = "1 / " + pack.length;
   nextBtn.disabled = true;
   prevBtn.disabled = true;
@@ -482,8 +630,10 @@ function renderCollection() {
 
       let text = document.createElement("p");
       text.innerHTML = "<b>" + card.name + "</b>";
+
       let rarity = document.createElement("p");
-      rarity.innerText = "⭐ " + card.rarity;
+      rarity.innerText = starsDisplay(card.rarity);
+
       if (!data.copies) data.copies = 1;
       let copies = document.createElement("p");
       copies.innerText = "x" + data.copies;

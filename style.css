@@ -374,7 +374,8 @@ body {
   }
 }
 
-#swipeCard.rarity-6 {
+#swipeContainer .rarity-6,
+#flipWrapper.rarity-6 {
   border: 3px solid gold;
   animation: rarityGlow 1.5s ease-in-out infinite;
 }
@@ -382,6 +383,13 @@ body {
 /* ===================================================== */
 /* SWIPE BOOSTER SYSTEM — FLIP 3D */
 /* ===================================================== */
+
+#boosterResult {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
 
 #swipeContainer {
   position: relative;
@@ -391,21 +399,17 @@ body {
   align-items: center;
   justify-content: center;
   margin-top: 15px;
-  touch-action: pan-y;
-  /* Perspective pour l'effet 3D */
   perspective: 1000px;
 }
 
-/* Wrapper qui tourne en 3D */
 #flipWrapper {
   width: 85%;
-  max-width: 320px;
+  max-width: 300px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
 }
 
-/* Face avant (dos de la carte — ce qu'on voit avant reveal) */
 #cardFront {
   width: 100%;
   border-radius: 18px;
@@ -419,10 +423,9 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  font-size: 48px;
+  font-size: 64px;
 }
 
-/* Face arrière (contenu de la carte) */
 #cardBack {
   position: absolute;
   top: 0;
@@ -453,40 +456,34 @@ body {
   font-size: 13px;
 }
 
-/* État retourné */
 #flipWrapper.flipped {
   transform: rotateY(180deg);
 }
 
-/* Animation de sortie vers la gauche après flip */
 #flipWrapper.exit-left {
   transform: rotateY(180deg) translateX(50%) scale(0.8);
   opacity: 0;
   transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-/* Animation de sortie vers la droite après flip */
 #flipWrapper.exit-right {
   transform: rotateY(180deg) translateX(-50%) scale(0.8);
   opacity: 0;
   transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-/* Entrée depuis la gauche (face verso visible) */
 #flipWrapper.enter-from-left {
   transform: rotateY(-180deg) translateX(-60%);
   opacity: 0;
   transition: none;
 }
 
-/* Entrée depuis la droite (face verso visible) */
 #flipWrapper.enter-from-right {
   transform: rotateY(180deg) translateX(60%);
   opacity: 0;
   transition: none;
 }
 
-/* Slide-in final vers position neutre flippée */
 #flipWrapper.enter-active {
   transform: rotateY(180deg) translateX(0);
   opacity: 1;
@@ -522,7 +519,8 @@ body {
 .swipe-arrows {
   display: flex;
   justify-content: space-between;
-  padding: 0 20px;
+  width: 85%;
+  max-width: 300px;
   margin-top: 12px;
 }
 
