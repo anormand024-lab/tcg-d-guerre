@@ -107,18 +107,17 @@ let cardsDB = [
   { id: 90, name: "Photo de groupe",    rarity: 6, url: "" },
 
   // ==================== RARETÉ 7 — FULL DIAMANT ====================
-  { id: 91, name: "Full Diamant",    rarity: 7, url: "https://i.postimg.cc/VLswGvTQ/Screenshot-20260606-215824-Chat-GPT.jpg" },
-  { id: 92, name: "Bite de riche",   rarity: 3, url: "https://i.postimg.cc/1RnRPktR/Screenshot-20260313-150147-Tik-Tok.jpg" },
-  { id: 93, name: "Gwer Test",       rarity: 1, url: "https://i.postimg.cc/XJPPQDSH/Screenshot-20260326-084451-Chrome.jpg" },
-  { id: 94, name: "Juda Test",       rarity: 1, url: "https://i.postimg.cc/BZkWgt4p/Screenshot-20260601-005721-Chrome.jpg" },
-  { id: 95, name: "Programme GPEC",  rarity: 2, url: "https://i.postimg.cc/85X2xzWj/Screenshot-20260225-232321-Chrome.jpg" },
-  { id: 96, name: "Mecredi",         rarity: 1, url: "https://i.postimg.cc/v8NyN3LN/Screenshot-20260222-230442-Tik-Tok.jpg" },
-  { id: 97, name: "Bavardage",       rarity: 1, url: "https://i.postimg.cc/4d4Gr0SM/Screenshot-20260213-094637-Chrome.jpg" },
-  { id: 98, name: "Charlie Kirk",    rarity: 3, url: "https://i.postimg.cc/c4vxxVLy/Screenshot-20260209-165956-Discord.jpg" },
-  { id: 99, name: "Pont de Moïse",   rarity: 4, url: "https://i.postimg.cc/0y3J5YsG/Screenshot-20251019-165456-Discord.jpg" },
-  { id: 100, name: "Affronte les arabes", rarity: 3, url: "https://i.postimg.cc/xdJMLs5r/Screenshot-20251019-164949-Discord.jpg" },
-  { id: 101, name: "Judicael", rarity: 1, url: "https://i.postimg.cc/26WdNHLc/Screenshot-20250923-125456-Instagram.jpg" },
-  { id: 102,  name: "Bonnimmigrés",     rarity: 1, rarity: 1, url: "https://i.postimg.cc/pLj6kBqG/Screenshot-20260606-123238-Tik-Tok.jpg" },
+  { id: 91, name: "Full Diamant",    rarity: 7, url: "" },
+  { id: 92, name: "Bite de riche",   rarity: 3, url: "" },
+  { id: 93, name: "Gwer Test",       rarity: 1, url: "" },
+  { id: 94, name: "Juda Test",       rarity: 1, url: "" },
+  { id: 95, name: "Programme GPEC",  rarity: 2, url: "" },
+  { id: 96, name: "Mecredi",         rarity: 1, url: "" },
+  { id: 97, name: "Bavardage",       rarity: 1, url: "" },
+  { id: 98, name: "Charlie Kirk",    rarity: 3, url: "" },
+  { id: 99, name: "Pont de Moïse",   rarity: 4, url: "" },
+  { id: 100, name: "Affronte les arabes", rarity: 3, url: "" },
+  { id: 101, name: "Judicael", rarity: 1, url: "" },
 ];
 
 // =====================================================
