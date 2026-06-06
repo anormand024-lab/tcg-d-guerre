@@ -109,7 +109,7 @@ let cardsDB = [
   // ==================== RARETÉ 7 — FULL DIAMANT ====================
   { id: 91, name: "Full Diamant",    rarity: 7, url: "https://i.postimg.cc/VLswGvTQ/Screenshot-20260606-215824-Chat-GPT.jpg" },
   { id: 92, name: "Bite de riche",   rarity: 3, url: "" },
-  { id: 93, name: "Gwer Test",       rarity: 1, url: "" },
+  { id: 93, name: "Gwer Test",       rarity: 1, url: "https://i.postimg.cc/XJPPQDSH/Screenshot-20260326-084451-Chrome.jpg" },
   { id: 94, name: "Juda Test",       rarity: 1, url: "" },
   { id: 95, name: "Programme GPEC",  rarity: 2, url: "" },
   { id: 96, name: "Mecredi",         rarity: 1, url: "" },
