@@ -108,6 +108,16 @@ let cardsDB = [
 
   // ==================== RARETÉ 7 — FULL DIAMANT ====================
   { id: 91, name: "Full Diamant",    rarity: 7, url: "" },
+  { id: 92, name: "Bite de riche",   rarity: 3, url: "" },
+  { id: 93, name: "Gwer Test",       rarity: 1, url: "" },
+  { id: 94, name: "Juda Test",       rarity: 1, url: "" },
+  { id: 95, name: "Programme GPEC",  rarity: 2, url: "" },
+  { id: 96, name: "Mecredi",         rarity: 1, url: "" },
+  { id: 97, name: "Bavardage",       rarity: 1, url: "" },
+  { id: 98, name: "Charlie Kirk",    rarity: 3, url: "" },
+  { id: 99, name: "Pont de Moïse",   rarity: 4, url: "" },
+  { id: 100, name: "Affronte les arabes", rarity: 3, url: "" },
+  { id: 101, name: "Judicael", rarity: 1, url: "" },
 ];
 
 // =====================================================
