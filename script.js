@@ -40,7 +40,7 @@ let cardsDB = [
   { id: 31, name: "L'école des blancs",       rarity: 4, url: "https://i.postimg.cc/Y9ZRs0CP/IMG-3025.webp" },
   { id: 32, name: "Gros Dormeur",       rarity: 2, url: "https://i.postimg.cc/1tcZrkHL/Design-sans-titre-1.png" },
   { id: 33, name: "Les diplomés",    rarity: 6, url: "https://i.postimg.cc/sXzkxnrG/Design-sans-titre-3.png" },
-  { id: 34, name: "Algator",    rarity: 2, url: "" },
+  { id: 34, name: "Algator",    rarity: 2, url: "https://i.postimg.cc/ncWW4LfL/IMG-20260606-205839.jpg" },
   { id: 35, name: "Date Fougeux",    rarity: 2, url: "https://i.postimg.cc/Pxd7TPWM/IMG-5456.png" },
   { id: 36, name: "Ben",    rarity: 2, url: "https://i.postimg.cc/nh80nXZ1/IMG-5529.jpg" },
   { id: 37, name: "Manetti",    rarity: 2, url: "https://i.postimg.cc/GpBsSQTc/IMG-5533.jpg" },
@@ -54,20 +54,20 @@ let cardsDB = [
   { id: 45, name: "Expulsion du territoire",    rarity: 2, url: "" },
 
   // ==================== RARETÉ 3 ====================
-  { id: 46, name: "Gros Pannards",     rarity: 3, url: "" },
+  { id: 46, name: "Gros Pannards",     rarity: 3, url: "https://i.postimg.cc/76Nc0Mwc/IMG-20260606-205848.jpg" },
   { id: 47, name: "Controlleur",     rarity: 3, url: "https://i.postimg.cc/qMk47vLh/IMG-7141.jpg" },
   { id: 48, name: "Isaac possede",    rarity: 3, url: "" },
-  { id: 49, name: "Valentin B le retour",    rarity: 3, url: "" },
+  { id: 49, name: "Valentin B le retour",    rarity: 3, url: "https://i.postimg.cc/nh66Jhdf/IMG-20260606-210331.jpg" },
   { id: 50, name: "Éric Z",    rarity: 3, url: "https://i.postimg.cc/Cxxv5WXJ/IMG-5538.jpg" },
   { id: 51, name: "Ophenya juive",    rarity: 3, url: "" },
   { id: 52, name: "Manu",    rarity: 3, url: "" },
-  { id: 53, name: "Famille Thuram",    rarity: 3, url: "" },
+  { id: 53, name: "Famille Thuram",    rarity: 3, url: "https://i.postimg.cc/dV7zpyjr/IMG-20260606-205842.jpg" },
   { id: 54, name: "Le logeur",    rarity: 3, url: "" },
   { id: 55, name: "Le bataclan",    rarity: 3, url: "https://i.postimg.cc/hvR4s8TN/IMG-7149.jpg" },
   { id: 56, name: "Autiste",    rarity: 3, url: "" },
   { id: 57, name: "Lepapyofficiel",    rarity: 3, url: "" },
   { id: 58, name: "Rensis Likert",    rarity: 3, url: "" },
-  { id: 59, name: "Inversion",    rarity: 3, url: "" },
+  { id: 59, name: "Inversion",    rarity: 3, url: "https://i.postimg.cc/hPGF8wzq/IMG-20260606-215227.jpg" },
   { id: 60, name: "Pieds qui puent",    rarity: 3, url: "" },
 
   // ==================== RARETÉ 4 ====================
@@ -107,7 +107,7 @@ let cardsDB = [
   { id: 90, name: "Photo de groupe",    rarity: 6, url: "" },
 
   // ==================== RARETÉ 7 — FULL DIAMANT ====================
-  { id: 91, name: "Full Diamant",    rarity: 7, url: "" },
+  { id: 91, name: "Full Diamant",    rarity: 7, url: "https://i.postimg.cc/VLswGvTQ/Screenshot-20260606-215824-Chat-GPT.jpg" },
   { id: 92, name: "Bite de riche",   rarity: 3, url: "https://i.postimg.cc/1RnRPktR/Screenshot-20260313-150147-Tik-Tok.jpg" },
   { id: 93, name: "Gwer Test",       rarity: 1, url: "https://i.postimg.cc/XJPPQDSH/Screenshot-20260326-084451-Chrome.jpg" },
   { id: 94, name: "Juda Test",       rarity: 1, url: "https://i.postimg.cc/BZkWgt4p/Screenshot-20260601-005721-Chrome.jpg" },
