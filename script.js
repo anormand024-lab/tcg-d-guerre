@@ -164,13 +164,67 @@ let collection = JSON.parse(localStorage.getItem("collection")) || {};
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
+// SHINY SYSTEM
+// =====================================================
+
+const SHINY_COST = { 1: 30, 2: 20, 3: 13, 4: 7, 5: 5, 6: 3, 7: 2 };
+let shinyCollection = JSON.parse(localStorage.getItem("shinyCollection")) || {};
+
+function saveShinyCollection() {
+  localStorage.setItem("shinyCollection", JSON.stringify(shinyCollection));
+}
+
+function craftShiny(cardId) {
+  let card = cardsDB.find(c => c.id === cardId);
+  if (!card) return;
+  let cost = SHINY_COST[card.rarity];
+  let data = collection[card.id];
+
+  if (!data || data.copies < cost) {
+    alert("❌ Il te faut " + cost + " exemplaires de \"" + card.name + "\" pour créer sa version Shiny !\nTu en as : " + (data ? data.copies : 0));
+    return;
+  }
+  if (shinyCollection[cardId]) {
+    alert("✨ Tu possèdes déjà la version Shiny de cette carte !");
+    return;
+  }
+  let confirmed = confirm(
+    "✨ Créer la Shiny de \"" + card.name + "\" ?\n" +
+    "Coût : " + cost + " exemplaires\n" +
+    "Tu en as : " + data.copies + "\n\n" +
+    "⚠️ Ces exemplaires seront détruits !"
+  );
+  if (!confirmed) return;
+
+  data.copies -= cost;
+  if (data.copies <= 0) delete collection[card.id];
+  localStorage.setItem("collection", JSON.stringify(collection));
+
+  shinyCollection[cardId] = true;
+  saveShinyCollection();
+
+  playDiamond();
+  showShinyBanner(card);
+  renderCollection();
+  renderShinyCollection();
+}
+
+function showShinyBanner(card) {
+  let banner = document.createElement("div");
+  banner.className = "shiny-craft-banner";
+  banner.innerHTML = "✨ <b>SHINY CRAFTÉE !</b> \"" + card.name + "\" brille maintenant pour toujours !";
+  let target = document.getElementById("boosterResult");
+  if (target) target.before(banner);
+  else document.body.prepend(banner);
+  setTimeout(() => banner.remove(), 4000);
+}
+
+// =====================================================
 // PITY SYSTEM
-// — pityCounter : nombre de boosters ouverts depuis le dernier drop ≥ rareté 6
-// — Au bout de 100 boosters, on force au moins une carte rareté 6+ dans le pack
 // =====================================================
 
 let pityCounter = Number(localStorage.getItem("pityCounter")) || 0;
-const PITY_THRESHOLD = 100; // tous les 100 boosters
+const PITY_THRESHOLD = 100;
 
 function savePity() {
   localStorage.setItem("pityCounter", pityCounter);
@@ -181,14 +235,7 @@ function updatePityDisplay() {
   if (!el) return;
   let remaining = PITY_THRESHOLD - pityCounter;
   let pct = Math.round((pityCounter / PITY_THRESHOLD) * 100);
-
-  // Couleur qui vire au orange/rouge quand on approche
-  let barColor = pct < 50
-    ? "#4dd2ff"
-    : pct < 75
-      ? "#EF9F27"
-      : "#ff4d4d";
-
+  let barColor = pct < 50 ? "#4dd2ff" : pct < 75 ? "#EF9F27" : "#ff4d4d";
   el.innerHTML = `
     <div class="pity-block">
       <div class="pity-label">
@@ -204,7 +251,7 @@ function updatePityDisplay() {
 }
 
 // =====================================================
-// AUDIO SYSTEM — Web Audio API TCG sounds
+// AUDIO SYSTEM
 // =====================================================
 
 let audioCtx = null;
@@ -229,29 +276,19 @@ function startBackgroundMusic() {
     bgMusicPlaying = true;
 
     const melody = [
-      { freq: 261.63, dur: 0.5 },
-      { freq: 311.13, dur: 0.5 },
-      { freq: 349.23, dur: 0.5 },
-      { freq: 392.00, dur: 0.5 },
-      { freq: 349.23, dur: 0.5 },
-      { freq: 311.13, dur: 0.5 },
-      { freq: 261.63, dur: 1.0 },
-      { freq: 233.08, dur: 0.5 },
-      { freq: 261.63, dur: 0.5 },
-      { freq: 311.13, dur: 0.5 },
-      { freq: 392.00, dur: 0.5 },
-      { freq: 466.16, dur: 0.5 },
-      { freq: 392.00, dur: 0.5 },
-      { freq: 349.23, dur: 0.5 },
-      { freq: 311.13, dur: 1.0 },
-      { freq: 261.63, dur: 1.0 },
+      { freq: 261.63, dur: 0.5 }, { freq: 311.13, dur: 0.5 },
+      { freq: 349.23, dur: 0.5 }, { freq: 392.00, dur: 0.5 },
+      { freq: 349.23, dur: 0.5 }, { freq: 311.13, dur: 0.5 },
+      { freq: 261.63, dur: 1.0 }, { freq: 233.08, dur: 0.5 },
+      { freq: 261.63, dur: 0.5 }, { freq: 311.13, dur: 0.5 },
+      { freq: 392.00, dur: 0.5 }, { freq: 466.16, dur: 0.5 },
+      { freq: 392.00, dur: 0.5 }, { freq: 349.23, dur: 0.5 },
+      { freq: 311.13, dur: 1.0 }, { freq: 261.63, dur: 1.0 },
     ];
 
     const bass = [
-      { freq: 65.41,  dur: 2.0 },
-      { freq: 87.31,  dur: 2.0 },
-      { freq: 73.42,  dur: 2.0 },
-      { freq: 65.41,  dur: 2.0 },
+      { freq: 65.41, dur: 2.0 }, { freq: 87.31, dur: 2.0 },
+      { freq: 73.42, dur: 2.0 }, { freq: 65.41, dur: 2.0 },
     ];
 
     let totalDur = melody.reduce((s, n) => s + n.dur, 0);
@@ -267,10 +304,8 @@ function startBackgroundMusic() {
         gain.gain.linearRampToValueAtTime(0.08, t + 0.02);
         gain.gain.setValueAtTime(0.08, t + note.dur - 0.05);
         gain.gain.linearRampToValueAtTime(0, t + note.dur);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + note.dur + 0.01);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t); osc.stop(t + note.dur + 0.01);
         bgMusicNodes.push(osc);
         t += note.dur;
       });
@@ -288,10 +323,8 @@ function startBackgroundMusic() {
         gain.gain.linearRampToValueAtTime(0.06, t + 0.05);
         gain.gain.setValueAtTime(0.06, t + note.dur - 0.1);
         gain.gain.linearRampToValueAtTime(0, t + note.dur);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + note.dur + 0.01);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t); osc.stop(t + note.dur + 0.01);
         bgMusicNodes.push(osc);
         t += note.dur;
       });
@@ -307,10 +340,8 @@ function startBackgroundMusic() {
         gain.gain.linearRampToValueAtTime(0.03 - i * 0.006, startTime + 0.5);
         gain.gain.setValueAtTime(0.03 - i * 0.006, startTime + duration - 0.5);
         gain.gain.linearRampToValueAtTime(0, startTime + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(startTime);
-        osc.stop(startTime + duration + 0.01);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(startTime); osc.stop(startTime + duration + 0.01);
         bgMusicNodes.push(osc);
       });
     }
@@ -338,11 +369,8 @@ function stopBackgroundMusic() {
 
 function toggleMusic() {
   if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-  if (bgMusicPlaying) {
-    stopBackgroundMusic();
-  } else {
-    startBackgroundMusic();
-  }
+  if (bgMusicPlaying) stopBackgroundMusic();
+  else startBackgroundMusic();
 }
 
 function updateMusicBtn() {
@@ -358,22 +386,16 @@ function playWhoosh() {
     let bufferSize = ctx.sampleRate * 0.12;
     let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     let data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
-    }
-    let source = ctx.createBufferSource();
-    source.buffer = buffer;
-    let filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+    let source = ctx.createBufferSource(); source.buffer = buffer;
+    let filter = ctx.createBiquadFilter(); filter.type = "bandpass";
     filter.frequency.setValueAtTime(800, ctx.currentTime);
     filter.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.12);
     filter.Q.value = 0.8;
     let gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
     gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
-    source.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    source.connect(filter); filter.connect(gainNode); gainNode.connect(ctx.destination);
     source.start();
   } catch(e) {}
 }
@@ -381,8 +403,7 @@ function playWhoosh() {
 function playFlip() {
   try {
     let ctx = getAudioCtx();
-    let osc = ctx.createOscillator();
-    let gain = ctx.createGain();
+    let osc = ctx.createOscillator(); let gain = ctx.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(900, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.08);
@@ -391,41 +412,29 @@ function playFlip() {
     let bufferSize = ctx.sampleRate * 0.06;
     let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     let d = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      d[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
-    }
-    let noise = ctx.createBufferSource();
-    noise.buffer = buffer;
+    for (let i = 0; i < bufferSize; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    let noise = ctx.createBufferSource(); noise.buffer = buffer;
     let noiseGain = ctx.createGain();
     noiseGain.gain.setValueAtTime(0.15, ctx.currentTime);
     noiseGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.06);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    noise.connect(noiseGain);
-    noiseGain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.12);
-    noise.start();
+    osc.connect(gain); gain.connect(ctx.destination);
+    noise.connect(noiseGain); noiseGain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.12); noise.start();
   } catch(e) {}
 }
 
 function playDing() {
   try {
     let ctx = getAudioCtx();
-    let freqs = [880, 1100, 1320];
-    freqs.forEach((freq, i) => {
-      let osc = ctx.createOscillator();
-      let gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
+    [880, 1100, 1320].forEach((freq, i) => {
+      let osc = ctx.createOscillator(); let gain = ctx.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
       let startTime = ctx.currentTime + i * 0.06;
       gain.gain.setValueAtTime(0, startTime);
       gain.gain.linearRampToValueAtTime(0.2 - i * 0.04, startTime + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 0.7);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(startTime); osc.stop(startTime + 0.7);
     });
   } catch(e) {}
 }
@@ -433,20 +442,15 @@ function playDing() {
 function playDiamond() {
   try {
     let ctx = getAudioCtx();
-    let freqs = [1047, 1319, 1568, 2093];
-    freqs.forEach((freq, i) => {
-      let osc = ctx.createOscillator();
-      let gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
+    [1047, 1319, 1568, 2093].forEach((freq, i) => {
+      let osc = ctx.createOscillator(); let gain = ctx.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
       let startTime = ctx.currentTime + i * 0.09;
       gain.gain.setValueAtTime(0, startTime);
       gain.gain.linearRampToValueAtTime(0.18 - i * 0.03, startTime + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 1.4);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(startTime); osc.stop(startTime + 1.4);
     });
   } catch(e) {}
 }
@@ -457,21 +461,15 @@ function playBoosterOpen() {
     let bufferSize = ctx.sampleRate * 0.3;
     let buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     let d = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      d[i] = (Math.random() * 2 - 1) * Math.sin(i / bufferSize * Math.PI);
-    }
-    let noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    let filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
+    for (let i = 0; i < bufferSize; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(i / bufferSize * Math.PI);
+    let noise = ctx.createBufferSource(); noise.buffer = buffer;
+    let filter = ctx.createBiquadFilter(); filter.type = "lowpass";
     filter.frequency.setValueAtTime(120, ctx.currentTime);
     filter.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3);
     let gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
     gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
-    noise.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    noise.connect(filter); filter.connect(gainNode); gainNode.connect(ctx.destination);
     noise.start();
     setTimeout(playWhoosh, 150);
   } catch(e) {}
@@ -517,7 +515,6 @@ function getRandomRarity() {
 function getRandomCard(forcedMinRarity = null) {
   let rarity;
   if (forcedMinRarity !== null) {
-    // Forcer une rareté >= forcedMinRarity
     do { rarity = getRandomRarity(); } while (rarity < forcedMinRarity);
   } else {
     rarity = getRandomRarity();
@@ -543,30 +540,21 @@ function openBooster() {
   localStorage.setItem("lastBoosterOpen", lastBoosterOpen);
   animateBoosterButton();
 
-  if (!bgMusicPlaying && audioCtx === null) {
-    startBackgroundMusic();
-  }
+  if (!bgMusicPlaying && audioCtx === null) startBackgroundMusic();
   playBoosterOpen();
 
-  // Incrémenter le compteur de pitié
   pityCounter++;
   savePity();
 
   let pack;
   if (pityCounter >= PITY_THRESHOLD) {
-    // Pitié déclenchée : on force au moins une carte rareté 6+ dans le pack
     pack = generatePackWithPity(6);
     pityCounter = 0;
     savePity();
-    // Afficher un message de pitié
     showPityBanner();
   } else {
     pack = generatePack(6);
-    // Si le pack contient naturellement une carte ≥ 6, on reset la pitié
-    if (pack.some(c => c.rarity >= 6)) {
-      pityCounter = 0;
-      savePity();
-    }
+    if (pack.some(c => c.rarity >= 6)) { pityCounter = 0; savePity(); }
   }
 
   updatePityDisplay();
@@ -582,15 +570,10 @@ function generatePack(size) {
   return pack;
 }
 
-// =====================================================
-// PITY FORCE RARITY 6 (Secrète) au lieu de 5
-// =====================================================
 function generatePackWithPity(size) {
   let pack = [];
-  // Première carte garantie rareté 6+ (Secrète minimum)
   pack.push(getRandomCard(6));
   for (let i = 1; i < size; i++) pack.push(getRandomCard());
-  // Mélange le pack pour que la carte pity ne soit pas toujours en premier
   pack.sort(() => Math.random() - 0.5);
   return pack;
 }
@@ -622,53 +605,37 @@ function animateBoosterButton() {
 }
 
 // =====================================================
-// DROP ANIMATION OVERLAY — s'affiche avant le flip pour les raretés 4-7
+// DROP ANIMATION OVERLAY
 // =====================================================
 
 const dropAnimConfigs = {
   4: {
-    label: "✦ ÉPIQUE ✦",
-    labelColor: "#7F77DD",
+    label: "✦ ÉPIQUE ✦", labelColor: "#7F77DD",
     bgColor: "radial-gradient(circle, rgba(127,119,221,0.35) 0%, rgba(10,10,30,0.98) 70%)",
     particleColors: ["#7F77DD", "#b3aeff", "#ffffff"],
-    particleCount: 18,
-    screenFlashColor: "rgba(127,119,221,0.5)",
-    duration: 1600,
-    shockwave: false,
-    letterboxEffect: false,
+    particleCount: 18, screenFlashColor: "rgba(127,119,221,0.5)",
+    duration: 1600, shockwave: false, letterboxEffect: false,
   },
   5: {
-    label: "★ LÉGENDAIRE ★",
-    labelColor: "#EF9F27",
+    label: "★ LÉGENDAIRE ★", labelColor: "#EF9F27",
     bgColor: "radial-gradient(circle, rgba(239,159,39,0.4) 0%, rgba(10,5,0,0.98) 70%)",
     particleColors: ["#EF9F27", "#ffdd80", "#ffffff", "#ff9a3c"],
-    particleCount: 32,
-    screenFlashColor: "rgba(239,159,39,0.6)",
-    duration: 2200,
-    shockwave: true,
-    letterboxEffect: false,
+    particleCount: 32, screenFlashColor: "rgba(239,159,39,0.6)",
+    duration: 2200, shockwave: true, letterboxEffect: false,
   },
   6: {
-    label: "◈ SECRÈTE ◈",
-    labelColor: "gold",
+    label: "◈ SECRÈTE ◈", labelColor: "gold",
     bgColor: "radial-gradient(circle, rgba(255,215,0,0.45) 0%, rgba(5,5,5,0.99) 65%)",
     particleColors: ["gold", "#fff700", "#ff00ff", "#00ffff", "#ffffff"],
-    particleCount: 50,
-    screenFlashColor: "rgba(255,215,0,0.8)",
-    duration: 3000,
-    shockwave: true,
-    letterboxEffect: true,
+    particleCount: 50, screenFlashColor: "rgba(255,215,0,0.8)",
+    duration: 3000, shockwave: true, letterboxEffect: true,
   },
   7: {
-    label: "💎 FULL DIAMANT 💎",
-    labelColor: "#00cfff",
+    label: "💎 FULL DIAMANT 💎", labelColor: "#00cfff",
     bgColor: "radial-gradient(circle, rgba(0,207,255,0.5) 0%, rgba(0,5,20,0.99) 60%)",
     particleColors: ["#00cfff", "#ffffff", "#80e8ff", "#0055ff", "#00ffcc"],
-    particleCount: 80,
-    screenFlashColor: "rgba(0,207,255,0.9)",
-    duration: 4000,
-    shockwave: true,
-    letterboxEffect: true,
+    particleCount: 80, screenFlashColor: "rgba(0,207,255,0.9)",
+    duration: 4000, shockwave: true, letterboxEffect: true,
   }
 };
 
@@ -676,16 +643,15 @@ function triggerDropAnimation(card, onDone) {
   let cfg = dropAnimConfigs[card.rarity];
   if (!cfg) { onDone(); return; }
 
-  let overlay = document.getElementById("dropOverlay");
-  let inner   = document.getElementById("dropOverlayInner");
-  let particles = document.getElementById("dropParticles");
+  let overlay    = document.getElementById("dropOverlay");
+  let inner      = document.getElementById("dropOverlayInner");
+  let particles  = document.getElementById("dropParticles");
   let cardReveal = document.getElementById("dropCardReveal");
   let cardImg    = document.getElementById("dropCardImg");
   let cardName   = document.getElementById("dropCardName");
   let cardStars  = document.getElementById("dropCardStars");
   let cardLabel  = document.getElementById("dropCardLabel");
 
-  // Reset
   overlay.className = "drop-overlay";
   inner.style.background = cfg.bgColor;
   particles.innerHTML = "";
@@ -693,7 +659,7 @@ function triggerDropAnimation(card, onDone) {
   cardReveal.style.transform = "scale(0.5)";
   cardLabel.innerText = cfg.label;
   cardLabel.style.color = cfg.labelColor;
-  cardLabel.style.textShadow = `0 0 30px ${cfg.labelColor}, 0 0 60px ${cfg.labelColor}`;
+  cardLabel.style.textShadow = "0 0 30px " + cfg.labelColor + ", 0 0 60px " + cfg.labelColor;
   cardName.innerText = card.name;
   cardStars.innerText = starsDisplay(card.rarity);
 
@@ -706,13 +672,10 @@ function triggerDropAnimation(card, onDone) {
     if (card.rarity === 6) img.classList.add("holo");
     cardImg.appendChild(img);
   } else {
-    cardImg.innerHTML = `<div class="drop-card-placeholder rarity-${card.rarity}">🂠</div>`;
+    cardImg.innerHTML = "<div class='drop-card-placeholder rarity-" + card.rarity + "'>🂠</div>";
   }
 
-  if (cfg.letterboxEffect) {
-    overlay.classList.add("letterbox");
-  }
-
+  if (cfg.letterboxEffect) overlay.classList.add("letterbox");
   overlay.classList.remove("hidden");
 
   let flash = document.createElement("div");
@@ -721,11 +684,8 @@ function triggerDropAnimation(card, onDone) {
   overlay.appendChild(flash);
   setTimeout(() => flash.remove(), 400);
 
-  if (card.rarity === 7) {
-    setTimeout(playDiamond, 200);
-  } else if (card.rarity >= 5) {
-    setTimeout(playDing, 100);
-  }
+  if (card.rarity === 7) setTimeout(playDiamond, 200);
+  else if (card.rarity >= 5) setTimeout(playDing, 100);
 
   spawnParticles(particles, cfg);
 
@@ -761,12 +721,10 @@ function triggerDropAnimation(card, onDone) {
 
 function spawnParticles(container, cfg) {
   let cx = 50, cy = 50;
-
   for (let i = 0; i < cfg.particleCount; i++) {
     let p = document.createElement("div");
     p.className = "drop-particle";
-
-    let angle = (Math.random() * 360);
+    let angle = Math.random() * 360;
     let dist  = 80 + Math.random() * 220;
     let size  = 4 + Math.random() * 10;
     let color = cfg.particleColors[Math.floor(Math.random() * cfg.particleColors.length)];
@@ -775,31 +733,14 @@ function spawnParticles(container, cfg) {
     let shape = Math.random() > 0.5 ? "50%" : "2px";
     let tx = Math.cos(angle * Math.PI / 180) * dist;
     let ty = Math.sin(angle * Math.PI / 180) * dist;
-
-    p.style.cssText = `
-      width:${size}px; height:${size}px;
-      background:${color};
-      border-radius:${shape};
-      left:${cx}%; top:${cy}%;
-      transform:translate(-50%,-50%);
-      --tx:${tx}px; --ty:${ty}px;
-      animation: particleBurst ${dur}s ease-out ${delay}s forwards;
-      box-shadow: 0 0 ${size * 2}px ${color};
-    `;
+    p.style.cssText = "width:" + size + "px;height:" + size + "px;background:" + color + ";border-radius:" + shape + ";left:" + cx + "%;top:" + cy + "%;transform:translate(-50%,-50%);--tx:" + tx + "px;--ty:" + ty + "px;animation:particleBurst " + dur + "s ease-out " + delay + "s forwards;box-shadow:0 0 " + (size * 2) + "px " + color + ";";
     container.appendChild(p);
   }
-
   if (cfg.particleCount >= 80) {
     for (let i = 0; i < 20; i++) {
       let star = document.createElement("div");
       star.className = "drop-star-fall";
-      star.style.cssText = `
-        left: ${Math.random() * 100}%;
-        animation-delay: ${Math.random() * 1}s;
-        animation-duration: ${0.8 + Math.random() * 0.6}s;
-        color: #00cfff;
-        font-size: ${10 + Math.random() * 14}px;
-      `;
+      star.style.cssText = "left:" + (Math.random() * 100) + "%;animation-delay:" + (Math.random()) + "s;animation-duration:" + (0.8 + Math.random() * 0.6) + "s;color:#00cfff;font-size:" + (10 + Math.random() * 14) + "px;";
       star.innerText = "✦";
       container.appendChild(star);
     }
@@ -807,7 +748,7 @@ function spawnParticles(container, cfg) {
 }
 
 // =====================================================
-// BOOSTER RENDER — FLIP 3D + RÉCAPITULATIF FINAL
+// BOOSTER RENDER
 // =====================================================
 
 function renderBooster(pack) {
@@ -851,12 +792,10 @@ function renderBooster(pack) {
   arrows.className = "swipe-arrows";
 
   let prevBtn = document.createElement("button");
-  prevBtn.innerText = "◀";
-  prevBtn.disabled = true;
+  prevBtn.innerText = "◀"; prevBtn.disabled = true;
 
   let nextBtn = document.createElement("button");
-  nextBtn.innerText = "▶";
-  nextBtn.disabled = true;
+  nextBtn.innerText = "▶"; nextBtn.disabled = true;
 
   arrows.appendChild(prevBtn);
   arrows.appendChild(nextBtn);
@@ -898,36 +837,21 @@ function renderBooster(pack) {
       cardBack.appendChild(img);
     }
 
-    let name = document.createElement("p");
-    name.innerHTML = "<b>" + card.name + "</b>";
+    let name = document.createElement("p"); name.innerHTML = "<b>" + card.name + "</b>";
+    let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
+    let copies = document.createElement("p"); copies.innerText = "x" + (data ? data.copies : 1);
+    cardBack.appendChild(name); cardBack.appendChild(rarity); cardBack.appendChild(copies);
 
-    let rarity = document.createElement("p");
-    rarity.innerText = starsDisplay(card.rarity);
-
-    let copies = document.createElement("p");
-    copies.innerText = "x" + (data ? data.copies : 1);
-
-    cardBack.appendChild(name);
-    cardBack.appendChild(rarity);
-    cardBack.appendChild(copies);
-
-    if (revealed.every(r => r)) {
-      setTimeout(() => showRecap(pack), 800);
-    }
+    if (revealed.every(r => r)) setTimeout(() => showRecap(pack), 800);
   }
 
   function doFlip() {
     if (isAnimating || isFlipped) return;
-
     let card = pack[currentIndex];
-
     if (card.rarity >= 4 && !dropTriggered[currentIndex]) {
       dropTriggered[currentIndex] = true;
       isAnimating = true;
-
-      triggerDropAnimation(card, () => {
-        actuallyFlip(card);
-      });
+      triggerDropAnimation(card, () => { actuallyFlip(card); });
     } else {
       actuallyFlip(card);
     }
@@ -935,108 +859,71 @@ function renderBooster(pack) {
 
   function actuallyFlip(card) {
     if (isFlipped) return;
-    isAnimating = true;
-    isFlipped = true;
-
+    isAnimating = true; isFlipped = true;
     playFlip();
     fillCardBack(card);
     flipWrapper.classList.add("flipped");
     tapHint.style.opacity = "0";
-
     nextBtn.disabled = (currentIndex >= pack.length - 1);
     prevBtn.disabled = (currentIndex <= 0);
-
     setTimeout(() => { isAnimating = false; }, 600);
   }
 
   flipWrapper.addEventListener("click", doFlip);
 
   let touchStartX2 = 0;
-  swipeContainer.addEventListener("touchstart", e => {
-    touchStartX2 = e.touches[0].clientX;
-  }, { passive: true });
+  swipeContainer.addEventListener("touchstart", e => { touchStartX2 = e.touches[0].clientX; }, { passive: true });
   swipeContainer.addEventListener("touchend", e => {
     let diff = touchStartX2 - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) goNext();
-      else goPrev();
-    } else {
-      doFlip();
-    }
+    if (Math.abs(diff) > 50) { if (diff > 0) goNext(); else goPrev(); }
+    else doFlip();
   });
 
   function loadCard(index, direction) {
     if (isAnimating) return;
-    isAnimating = true;
-    isFlipped = false;
-    nextBtn.disabled = true;
-    prevBtn.disabled = true;
+    isAnimating = true; isFlipped = false;
+    nextBtn.disabled = true; prevBtn.disabled = true;
     tapHint.style.opacity = "1";
-
     playWhoosh();
-
     let exitClass = direction === "next" ? "exit-left" : "exit-right";
     flipWrapper.classList.add(exitClass);
-
     setTimeout(() => {
-      flipWrapper.className = "";
-      flipWrapper.id = "flipWrapper";
-      cardFront.innerText = "🂠";
-      cardBack.innerHTML = "";
-
+      flipWrapper.className = ""; flipWrapper.id = "flipWrapper";
+      cardFront.innerText = "🂠"; cardBack.innerHTML = "";
       let enterClass = direction === "next" ? "enter-from-right" : "enter-from-left";
       flipWrapper.classList.add(enterClass);
       void flipWrapper.offsetWidth;
       flipWrapper.classList.remove(enterClass);
       flipWrapper.classList.add("enter-active");
-
       counter.innerText = (index + 1) + " / " + pack.length;
-
-      setTimeout(() => {
-        flipWrapper.classList.remove("enter-active");
-        isAnimating = false;
-      }, 420);
+      setTimeout(() => { flipWrapper.classList.remove("enter-active"); isAnimating = false; }, 420);
     }, 420);
   }
 
   function goNext() {
     if (isAnimating || !isFlipped || currentIndex >= pack.length - 1) return;
-    currentIndex++;
-    loadCard(currentIndex, "next");
+    currentIndex++; loadCard(currentIndex, "next");
   }
-
   function goPrev() {
     if (isAnimating || !isFlipped || currentIndex <= 0) return;
-    currentIndex--;
-    loadCard(currentIndex, "prev");
+    currentIndex--; loadCard(currentIndex, "prev");
   }
 
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
 
-  let mouseStartX = 0;
-  let dragging = false;
-
-  flipWrapper.addEventListener("mousedown", e => {
-    mouseStartX = e.clientX;
-    dragging = true;
-  });
-
+  let mouseStartX = 0, dragging = false;
+  flipWrapper.addEventListener("mousedown", e => { mouseStartX = e.clientX; dragging = true; });
   window.addEventListener("mouseup", e => {
     if (!dragging) return;
     dragging = false;
     let diff = mouseStartX - e.clientX;
-    if (Math.abs(diff) > 60) {
-      if (diff > 0) goNext();
-      else goPrev();
-    } else {
-      doFlip();
-    }
+    if (Math.abs(diff) > 60) { if (diff > 0) goNext(); else goPrev(); }
+    else doFlip();
   });
 
   counter.innerText = "1 / " + pack.length;
-  nextBtn.disabled = true;
-  prevBtn.disabled = true;
+  nextBtn.disabled = true; prevBtn.disabled = true;
 }
 
 // =====================================================
@@ -1046,7 +933,6 @@ function renderBooster(pack) {
 function showRecap(pack) {
   let recapContainer = document.getElementById("boosterRecap");
   if (!recapContainer) return;
-
   recapContainer.innerHTML = "";
   recapContainer.style.display = "block";
 
@@ -1076,9 +962,7 @@ function showRecap(pack) {
     }
 
     if (imgSrc) {
-      let img = document.createElement("img");
-      img.src = imgSrc;
-      el.appendChild(img);
+      let img = document.createElement("img"); img.src = imgSrc; el.appendChild(img);
     } else {
       let placeholder = document.createElement("div");
       placeholder.className = "recap-placeholder";
@@ -1086,14 +970,9 @@ function showRecap(pack) {
       el.appendChild(placeholder);
     }
 
-    let name = document.createElement("p");
-    name.innerHTML = "<b>" + card.name + "</b>";
-
-    let rarity = document.createElement("p");
-    rarity.innerText = starsDisplay(card.rarity);
-
-    el.appendChild(name);
-    el.appendChild(rarity);
+    let name = document.createElement("p"); name.innerHTML = "<b>" + card.name + "</b>";
+    let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
+    el.appendChild(name); el.appendChild(rarity);
     grid.appendChild(el);
   });
 
@@ -1101,11 +980,10 @@ function showRecap(pack) {
 }
 
 // =====================================================
-// CARD ZOOM MODAL — Affichage plein écran d'une carte
+// CARD ZOOM MODAL
 // =====================================================
 
 function openCardModal(card) {
-  // Créer l'overlay s'il n'existe pas
   let modal = document.getElementById("cardModal");
   if (!modal) {
     modal = document.createElement("div");
@@ -1121,45 +999,31 @@ function openCardModal(card) {
           <div class="card-modal-stars" id="cardModalStars"></div>
           <div class="card-modal-rarity-label" id="cardModalRarityLabel"></div>
           <div class="card-modal-copies" id="cardModalCopies"></div>
+          <div class="card-modal-shiny-badge" id="cardModalShinyBadge"></div>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
-
-    // Fermer sur clic backdrop
     modal.querySelector(".card-modal-backdrop").addEventListener("click", closeCardModal);
     modal.querySelector("#cardModalClose").addEventListener("click", closeCardModal);
-
-    // Fermer sur Escape
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") closeCardModal();
-    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeCardModal(); });
   }
 
-  const rarityLabels = {
-    1: "Commune",
-    2: "Peu Commune",
-    3: "Rare",
-    4: "Épique",
-    5: "Légendaire",
-    6: "Secrète",
-    7: "Full Diamant"
-  };
+  const rarityLabels = { 1: "Commune", 2: "Peu Commune", 3: "Rare", 4: "Épique", 5: "Légendaire", 6: "Secrète", 7: "Full Diamant" };
+  const rarityColors = { 1: "#888780", 2: "#378ADD", 3: "#1D9E75", 4: "#7F77DD", 5: "#EF9F27", 6: "gold", 7: "#00cfff" };
 
   let imgSrc = getCardImage(card);
   let data = collection[card.id];
+  let isShiny = shinyCollection[card.id];
 
-  // Remplir les infos
   let imgWrap = modal.querySelector("#cardModalImgWrap");
   imgWrap.innerHTML = "";
   imgWrap.className = "card-modal-img-wrap rarity-" + card.rarity;
   if (card.rarity === 6) imgWrap.classList.add("holo");
+  if (isShiny) imgWrap.classList.add("shiny-card");
 
   if (imgSrc) {
-    let img = document.createElement("img");
-    img.src = imgSrc;
-    img.className = "card-modal-img";
-    imgWrap.appendChild(img);
+    let img = document.createElement("img"); img.src = imgSrc; img.className = "card-modal-img"; imgWrap.appendChild(img);
   } else {
     let placeholder = document.createElement("div");
     placeholder.className = "card-modal-placeholder";
@@ -1170,16 +1034,16 @@ function openCardModal(card) {
   modal.querySelector("#cardModalName").innerText = card.name;
   modal.querySelector("#cardModalStars").innerText = starsDisplay(card.rarity);
   modal.querySelector("#cardModalRarityLabel").innerText = rarityLabels[card.rarity] || "";
+  modal.querySelector("#cardModalRarityLabel").style.color = rarityColors[card.rarity] || "white";
   modal.querySelector("#cardModalCopies").innerText = data ? "x" + data.copies + " exemplaire" + (data.copies > 1 ? "s" : "") : "";
 
-  // Appliquer la couleur de rareté au label
-  const rarityColors = {
-    1: "#888780", 2: "#378ADD", 3: "#1D9E75",
-    4: "#7F77DD", 5: "#EF9F27", 6: "gold", 7: "#00cfff"
-  };
-  modal.querySelector("#cardModalRarityLabel").style.color = rarityColors[card.rarity] || "white";
+  // Badge shiny dans le modal
+  let shinyBadgeEl = modal.querySelector("#cardModalShinyBadge");
+  shinyBadgeEl.innerHTML = "";
+  if (isShiny) {
+    shinyBadgeEl.innerHTML = "<span class='shiny-modal-badge'>✦ SHINY</span>";
+  }
 
-  // Afficher
   modal.classList.remove("hidden");
   setTimeout(() => modal.classList.add("visible"), 10);
 }
@@ -1200,7 +1064,7 @@ function renderCollection() {
   container.innerHTML = "";
 
   let count = 0;
-  for (let c of cardsDB) { if (collection[c.id]) count++; }
+  for (let c of cardsDB) { if (collection[c.id] || shinyCollection[c.id]) count++; }
 
   let header = document.createElement("div");
   header.innerText = "📚 Collection : " + count + "/" + cardsDB.length;
@@ -1223,7 +1087,9 @@ function renderCollection() {
   rarityConfig.forEach(cfg => {
     let total = cardsDB.filter(c => c.rarity === cfg.rarity).length;
     let owned = cardsDB.filter(c => c.rarity === cfg.rarity && collection[c.id]).length;
-    let pct   = total > 0 ? Math.round((owned / total) * 100) : 0;
+    let shinyOwned = cardsDB.filter(c => c.rarity === cfg.rarity && shinyCollection[c.id]).length;
+    let pct = total > 0 ? Math.round((owned / total) * 100) : 0;
+    let shinyPct = total > 0 ? Math.round((shinyOwned / total) * 100) : 0;
 
     let row = document.createElement("div");
     row.style.cssText = "display:flex;flex-direction:column;gap:4px;";
@@ -1232,16 +1098,15 @@ function renderCollection() {
     labelRow.style.cssText = "display:flex;justify-content:space-between;align-items:center;font-size:12px;";
     labelRow.innerHTML =
       "<span style='color:" + cfg.color + ";font-weight:bold;'>" + cfg.icon + " " + cfg.label + "</span>" +
-      "<span style='color:rgba(255,255,255,0.6);'>" + owned + " / " + total + "</span>";
+      "<span style='color:rgba(255,255,255,0.6);'>" + owned + " / " + total +
+      (shinyOwned > 0 ? " <span style='color:#ffe066;font-size:10px;'>✨ " + shinyOwned + "✦</span>" : "") +
+      "</span>";
 
     let barBg = document.createElement("div");
-    barBg.style.cssText = "width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;";
+    barBg.style.cssText = "width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;position:relative;";
 
     let barFill = document.createElement("div");
-    barFill.style.cssText =
-      "height:100%;border-radius:99px;transition:width 0.6s ease;" +
-      "width:" + pct + "%;" +
-      "background:" + cfg.color + ";";
+    barFill.style.cssText = "height:100%;border-radius:99px;transition:width 0.6s ease;width:" + pct + "%;background:" + cfg.color + ";";
     if (cfg.rarity === 7) {
       barFill.style.background = "linear-gradient(90deg, #00cfff, #ffffff, #00cfff)";
       barFill.style.backgroundSize = "200% 100%";
@@ -1249,6 +1114,13 @@ function renderCollection() {
     }
 
     barBg.appendChild(barFill);
+
+    if (shinyOwned > 0) {
+      let shinyBarFill = document.createElement("div");
+      shinyBarFill.style.cssText = "position:absolute;top:0;left:0;height:100%;border-radius:99px;width:" + shinyPct + "%;background:linear-gradient(90deg,#ffe066,#fff,#ffe066);background-size:200% 100%;animation:shinyBarAnim 1.5s linear infinite;opacity:0.85;";
+      barBg.appendChild(shinyBarFill);
+    }
+
     row.appendChild(labelRow);
     row.appendChild(barBg);
     progressBlock.appendChild(row);
@@ -1256,49 +1128,148 @@ function renderCollection() {
 
   container.appendChild(progressBlock);
 
+  // Barre progression globale Shiny
+  let totalCards = cardsDB.length;
+  let totalShiny = Object.keys(shinyCollection).length;
+  let shinyPctGlobal = Math.round((totalShiny / totalCards) * 100);
+
+  let shinyProgressBlock = document.createElement("div");
+  shinyProgressBlock.style.cssText = "margin-bottom:16px;padding:10px 14px;background:rgba(255,224,102,0.06);border-radius:14px;border:1px solid rgba(255,224,102,0.15);";
+  shinyProgressBlock.innerHTML =
+    "<div style='display:flex;justify-content:space-between;font-size:12px;font-weight:bold;margin-bottom:6px;'>" +
+    "<span style='color:#ffe066;'>✨ Shinys</span>" +
+    "<span style='color:rgba(255,255,255,0.6);'>" + totalShiny + " / " + totalCards + "</span></div>" +
+    "<div style='width:100%;height:7px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden;'>" +
+    "<div style='height:100%;width:" + shinyPctGlobal + "%;border-radius:99px;background:linear-gradient(90deg,#ffe066,#fff700,#fff,#ffe066);background-size:200% 100%;animation:shinyBarAnim 1.5s linear infinite;'></div></div>" +
+    "<div style='font-size:10px;color:rgba(255,255,255,0.35);text-align:right;margin-top:4px;'>" + shinyPctGlobal + "% complété</div>";
+  container.appendChild(shinyProgressBlock);
+
   let sep = document.createElement("hr");
   sep.style.cssText = "border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0 0 12px 0;";
   container.appendChild(sep);
 
   cardsDB.forEach(card => {
     let data = collection[card.id];
+    let isShiny = shinyCollection[card.id];
     let el = document.createElement("div");
 
-    if (!data) {
+    if (!data && !isShiny) {
       el.className = "card card-locked";
       el.innerHTML = "<div class='lock-icon'>🔒</div>";
     } else {
       el.className = "card rarity-" + card.rarity;
       if (card.rarity === 6) el.classList.add("holo");
+      if (isShiny) el.classList.add("shiny-card");
 
-      // ✅ NOUVEAU : Clic sur carte → zoom modal
       el.style.cursor = "pointer";
       el.addEventListener("click", () => openCardModal(card));
 
       let imgSrc = getCardImage(card);
       if (imgSrc) {
-        let image = document.createElement("img");
-        image.src = imgSrc;
-        el.appendChild(image);
+        let image = document.createElement("img"); image.src = imgSrc; el.appendChild(image);
       }
 
-      let text = document.createElement("p");
-      text.innerHTML = "<b>" + card.name + "</b>";
+      if (isShiny) {
+        let shinyBadge = document.createElement("div");
+        shinyBadge.className = "shiny-badge";
+        shinyBadge.innerText = "✦";
+        el.appendChild(shinyBadge);
+      }
 
-      let rarity = document.createElement("p");
-      rarity.innerText = starsDisplay(card.rarity);
+      let text = document.createElement("p"); text.innerHTML = "<b>" + card.name + "</b>";
+      let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
 
-      if (!data.copies) data.copies = 1;
-      let copies = document.createElement("p");
-      copies.innerText = "x" + data.copies;
+      if (data) {
+        if (!data.copies) data.copies = 1;
+        let copies = document.createElement("p"); copies.innerText = "x" + data.copies;
+        let cost = SHINY_COST[card.rarity];
 
-      el.appendChild(text);
-      el.appendChild(rarity);
-      el.appendChild(copies);
+        if (!isShiny && data.copies >= cost) {
+          let craftBtn = document.createElement("button");
+          craftBtn.className = "craft-shiny-btn";
+          craftBtn.innerText = "✨ Shiny (" + cost + ")";
+          craftBtn.addEventListener("click", (e) => { e.stopPropagation(); craftShiny(card.id); });
+          el.appendChild(text); el.appendChild(rarity); el.appendChild(copies); el.appendChild(craftBtn);
+        } else {
+          el.appendChild(text); el.appendChild(rarity); el.appendChild(copies);
+          if (!isShiny) {
+            let prog = document.createElement("div");
+            prog.className = "craft-progress-bar";
+            let pct = Math.min(100, Math.round((data.copies / cost) * 100));
+            prog.innerHTML = "<div class='craft-progress-fill' style='width:" + pct + "%'></div>";
+            let progLabel = document.createElement("div");
+            progLabel.className = "craft-progress-label";
+            progLabel.innerText = data.copies + "/" + cost;
+            el.appendChild(prog); el.appendChild(progLabel);
+          }
+        }
+      } else {
+        el.appendChild(text); el.appendChild(rarity);
+        let maxLabel = document.createElement("p");
+        maxLabel.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
+        maxLabel.innerText = "✦ MAX";
+        el.appendChild(maxLabel);
+      }
     }
-
     container.appendChild(el);
   });
+}
+
+// =====================================================
+// SHINY COLLECTION RENDER
+// =====================================================
+
+function renderShinyCollection() {
+  let container = document.getElementById("shinyList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  let shinys = cardsDB.filter(c => shinyCollection[c.id]);
+
+  let header = document.createElement("div");
+  header.style.cssText = "text-align:center;font-size:18px;font-weight:bold;margin-bottom:16px;";
+  header.innerHTML = "✨ Shinys : <span style='color:#ffe066'>" + shinys.length + "</span> / " + cardsDB.length;
+  container.appendChild(header);
+
+  if (shinys.length === 0) {
+    let empty = document.createElement("div");
+    empty.style.cssText = "text-align:center;opacity:0.4;font-size:14px;margin-top:40px;line-height:2.2;";
+    empty.innerHTML = "✨<br>Aucune carte Shiny encore...<br><small>Collecte des doublons et forge-les !</small>";
+    container.appendChild(empty);
+    return;
+  }
+
+  let grid = document.createElement("div");
+  grid.className = "cards-grid";
+
+  shinys.forEach(card => {
+    let el = document.createElement("div");
+    el.className = "card rarity-" + card.rarity + " shiny-card";
+    if (card.rarity === 6) el.classList.add("holo");
+    el.style.cursor = "pointer";
+    el.addEventListener("click", () => openCardModal(card));
+
+    let imgSrc = getCardImage(card);
+    if (imgSrc) {
+      let img = document.createElement("img"); img.src = imgSrc; el.appendChild(img);
+    }
+
+    let shinyBadge = document.createElement("div");
+    shinyBadge.className = "shiny-badge";
+    shinyBadge.innerText = "✦";
+    el.appendChild(shinyBadge);
+
+    let name = document.createElement("p"); name.innerHTML = "<b>" + card.name + "</b>";
+    let stars = document.createElement("p"); stars.innerText = starsDisplay(card.rarity);
+    let maxed = document.createElement("p");
+    maxed.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
+    maxed.innerText = "✦ SHINY MAX";
+
+    el.appendChild(name); el.appendChild(stars); el.appendChild(maxed);
+    grid.appendChild(el);
+  });
+
+  container.appendChild(grid);
 }
 
 // =====================================================
@@ -1309,11 +1280,14 @@ function resetCollection() {
   let confirmed = confirm("⚠️ Es-tu sûr de vouloir réinitialiser toute ta collection ? Cette action est irréversible !");
   if (!confirmed) return;
   collection = {};
+  shinyCollection = {};
   pityCounter = 0;
   localStorage.removeItem("collection");
+  localStorage.removeItem("shinyCollection");
   localStorage.removeItem("pityCounter");
   savePity();
   renderCollection();
+  renderShinyCollection();
   updatePityDisplay();
   document.getElementById("boosterResult").innerHTML = "";
   alert("✅ Collection réinitialisée !");
@@ -1329,11 +1303,7 @@ function startCooldown() {
     let diff = 40000 - (now - lastBoosterOpen);
     let el = document.getElementById("cooldown");
     if (!el) { clearInterval(interval); return; }
-    if (diff <= 0) {
-      el.innerText = "";
-      clearInterval(interval);
-      return;
-    }
+    if (diff <= 0) { el.innerText = ""; clearInterval(interval); return; }
     el.innerText = "Cooldown : " + Math.ceil(diff / 1000) + "s";
   }, 1000);
 }
@@ -1371,6 +1341,7 @@ function uploadImage() {
 // =====================================================
 
 renderCollection();
+renderShinyCollection();
 startCooldown();
 updateMusicBtn();
 updatePityDisplay();

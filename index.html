@@ -14,6 +14,7 @@
     <nav class="nav">
       <button onclick="showTab('booster')">🎁 Booster</button>
       <button onclick="showTab('collection')">📚 Collection</button>
+      <button onclick="showTab('shiny'); renderShinyCollection()">✨ Shinys</button>
       <button onclick="showTab('admin')">⚙️ Admin</button>
     </nav>
     <main>
@@ -34,6 +35,11 @@
           <div id="collectionList" class="cards-grid"></div>
         </div>
       </section>
+      <section id="shiny" class="tab">
+        <div class="panel">
+          <div id="shinyList"></div>
+        </div>
+      </section>
       <section id="admin" class="tab">
         <div class="panel">
           <h2>Admin - Upload image</h2>
@@ -49,7 +55,6 @@
       </section>
     </main>
   </div>
-
   <!-- Overlay d'animation de drop rare -->
   <div id="dropOverlay" class="drop-overlay hidden">
     <div id="dropOverlayInner" class="drop-overlay-inner">
@@ -62,7 +67,6 @@
       </div>
     </div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>

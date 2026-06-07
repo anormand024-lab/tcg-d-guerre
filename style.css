@@ -60,21 +60,22 @@ body {
 }
 
 /* ===================================================== */
-/* NAVIGATION */
+/* NAVIGATION — 4 boutons avec Shinys */
 /* ===================================================== */
 
 .nav {
   display: flex;
-  gap: 8px;
-  padding: 12px;
+  gap: 6px;
+  padding: 10px;
 }
 
 .nav button {
   flex: 1;
-  padding: 14px;
+  padding: 11px 4px;
   border-radius: 16px;
   border: none;
   font-weight: bold;
+  font-size: 12px;
   cursor: pointer;
   color: white;
   transition: transform 0.2s ease, filter 0.2s ease;
@@ -89,6 +90,11 @@ body {
 }
 
 .nav button:nth-child(3) {
+  background: linear-gradient(135deg, #ffe066, #ffb300);
+  color: #2a1800;
+}
+
+.nav button:nth-child(4) {
   background: linear-gradient(135deg, #b84dff, #ff4df0);
 }
 
@@ -850,7 +856,6 @@ body {
   display: none;
 }
 
-/* Barres de letterbox (cinématique) pour rarity 6-7 */
 .drop-overlay.letterbox::before,
 .drop-overlay.letterbox::after {
   content: "";
@@ -881,7 +886,6 @@ body {
   gap: 16px;
 }
 
-/* Flash écran */
 .screen-flash {
   position: absolute;
   inset: 0;
@@ -895,7 +899,6 @@ body {
   100% { opacity: 0; }
 }
 
-/* Shockwave */
 .shockwave {
   position: absolute;
   top: 50%;
@@ -914,7 +917,6 @@ body {
   100% { width: 600px; height: 600px; opacity: 0; }
 }
 
-/* Particules */
 .drop-particles {
   position: absolute;
   inset: 0;
@@ -932,16 +934,13 @@ body {
     transform: translate(-50%, -50%) translate(0px, 0px) scale(1);
     opacity: 1;
   }
-  80% {
-    opacity: 0.8;
-  }
+  80%  { opacity: 0.8; }
   100% {
     transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0);
     opacity: 0;
   }
 }
 
-/* Étoiles tombantes pour Diamant */
 .drop-star-fall {
   position: absolute;
   top: -30px;
@@ -957,7 +956,6 @@ body {
   100% { top: 110%; opacity: 0; }
 }
 
-/* Carte dans l'overlay */
 .drop-card-reveal {
   position: relative;
   z-index: 5;
@@ -1021,7 +1019,6 @@ body {
   to   { transform: scale(1.06); }
 }
 
-/* Hint "tap to skip" */
 .drop-overlay::after {
   content: "Tape pour passer";
   position: absolute;
@@ -1034,19 +1031,17 @@ body {
   pointer-events: none;
 }
 
-/* Rarity-specific overlays pour la carte dans l'overlay */
 .drop-card-img-el.rarity-4 { border: 2px solid #7F77DD; box-shadow: 0 0 20px rgba(127,119,221,0.7); }
 .drop-card-img-el.rarity-5 { border: 2px solid #EF9F27; box-shadow: 0 0 25px rgba(239,159,39,0.8); }
 .drop-card-img-el.rarity-6 { border: 3px solid gold; box-shadow: 0 0 30px rgba(255,215,0,0.9), 0 0 60px rgba(255,215,0,0.4); }
 .drop-card-img-el.rarity-7 { border: 3px solid #00cfff; box-shadow: 0 0 30px rgba(0,207,255,1), 0 0 80px rgba(0,150,255,0.5); }
 
-/* Arrière-plan overlay avec dégradé rarity */
 .drop-overlay-inner {
   background: inherit;
 }
 
 /* ===================================================== */
-/* CARD ZOOM MODAL — Affichage plein écran               */
+/* CARD ZOOM MODAL                                       */
 /* ===================================================== */
 
 .card-modal {
@@ -1116,15 +1111,9 @@ body {
   backdrop-filter: blur(4px);
 }
 
-.card-modal-close:hover {
-  background: rgba(255,255,255,0.3);
-}
+.card-modal-close:hover { background: rgba(255,255,255,0.3); }
+.card-modal-close:active { transform: scale(0.9); }
 
-.card-modal-close:active {
-  transform: scale(0.9);
-}
-
-/* Image wrapper dans le modal — hérite des styles de rareté */
 .card-modal-img-wrap {
   width: 100%;
   border-radius: 20px;
@@ -1135,7 +1124,6 @@ body {
   position: relative;
 }
 
-/* Réutilise les glow de rareté — déjà définis plus haut */
 .card-modal-img-wrap.rarity-6 {
   border: 3px solid gold;
   animation: rarityGlow 1.5s ease-in-out infinite;
@@ -1154,7 +1142,6 @@ body {
   object-position: center top;
   border-radius: 12px;
   display: block;
-  /* Légère 3D tilt au survol */
   transition: transform 0.3s ease;
 }
 
@@ -1210,6 +1197,175 @@ body {
   color: rgba(255,255,255,0.45);
   letter-spacing: 1px;
   margin-top: 2px;
+}
+
+/* ===================================================== */
+/* SHINY SYSTEM                                          */
+/* ===================================================== */
+
+/* Effet visuel carte shiny */
+.shiny-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.shiny-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    125deg,
+    transparent 15%,
+    rgba(255,224,102,0.18) 30%,
+    rgba(255,255,255,0.35) 50%,
+    rgba(255,224,102,0.18) 70%,
+    transparent 85%
+  );
+  background-size: 300% 300%;
+  animation: shinySwipe 2.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes shinySwipe {
+  0%   { background-position: 200% 0%; }
+  100% { background-position: -200% 0%; }
+}
+
+.shiny-card {
+  border-color: #ffe066 !important;
+  animation: shinyCardPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes shinyCardPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(255,224,102,0.5),
+      0 0 24px rgba(255,224,102,0.25),
+      inset 0 0 8px rgba(255,224,102,0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(255,224,102,0.9),
+      0 0 50px rgba(255,224,102,0.45),
+      inset 0 0 16px rgba(255,224,102,0.2);
+  }
+}
+
+/* Badge ✦ doré sur la carte */
+.shiny-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #ffe066, #fff700, #ffb300);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #3a2500;
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(255,224,102,0.9), 0 0 16px rgba(255,200,0,0.5);
+  animation: shinyBadgePulse 2s ease-in-out infinite;
+  line-height: 1;
+}
+
+@keyframes shinyBadgePulse {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 4px gold); }
+  50%       { filter: brightness(1.5) drop-shadow(0 0 10px gold); }
+}
+
+/* Bouton craft shiny */
+.craft-shiny-btn {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 5px 4px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffe066, #ffb300);
+  color: #2a1800;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  position: relative;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(255,180,0,0.5);
+}
+
+.craft-shiny-btn:hover  { filter: brightness(1.1); box-shadow: 0 4px 14px rgba(255,200,0,0.7); }
+.craft-shiny-btn:active { transform: scale(0.93); filter: brightness(1.2); }
+
+/* Barre de progression vers le craft */
+.craft-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.craft-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #ffe066, #ffb300);
+  transition: width 0.5s ease;
+}
+
+.craft-progress-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  text-align: right;
+  margin-top: 1px;
+}
+
+/* Bannière craft shiny */
+.shiny-craft-banner {
+  background: linear-gradient(135deg, #ffe066, #fff700, #ffb300);
+  color: #2a1800;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  animation: pityBannerIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  box-shadow: 0 0 24px rgba(255,215,0,0.8), 0 0 60px rgba(255,200,0,0.3);
+  letter-spacing: 0.5px;
+}
+
+/* Animation barre shiny dans les progressions */
+@keyframes shinyBarAnim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Badge shiny dans le modal */
+.shiny-modal-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 4px 14px;
+  background: linear-gradient(135deg, #ffe066, #fff700, #ffb300);
+  color: #2a1800;
+  font-weight: 900;
+  font-size: 13px;
+  border-radius: 20px;
+  letter-spacing: 2px;
+  box-shadow: 0 0 14px rgba(255,215,0,0.7), 0 0 30px rgba(255,200,0,0.3);
+  animation: shinyBadgePulse 2s ease-in-out infinite;
+}
+
+/* Image wrap shiny dans le modal */
+.card-modal-img-wrap.shiny-card {
+  border-color: #ffe066 !important;
+  animation: shinyCardPulse 2s ease-in-out infinite !important;
 }
 
 /* ===================================================== */
