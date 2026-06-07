@@ -44,14 +44,14 @@ let cardsDB = [
   { id: 35, name: "Date Fougeux",    rarity: 2, url: "https://i.postimg.cc/Pxd7TPWM/IMG-5456.png" },
   { id: 36, name: "Ben",    rarity: 2, url: "https://i.postimg.cc/nh80nXZ1/IMG-5529.jpg" },
   { id: 37, name: "Manetti",    rarity: 2, url: "https://i.postimg.cc/GpBsSQTc/IMG-5533.jpg" },
-  { id: 38, name: "Le H c'est le S",    rarity: 2, url: "" },
+  { id: 38, name: "Le H c'est le S",    rarity: 2, url: "https://i.postimg.cc/gJBDsVHn/IMG-20260608-001225-181.jpg" },
   { id: 39, name: "Loulou_prise",    rarity: 2, url: "https://i.postimg.cc/66vMgVJk/IMG-6789.png" },
   { id: 40, name: "Free israël",    rarity: 2, url: "https://i.postimg.cc/dVBHnqP6/IMG-7114.jpg" },
   { id: 41, name: "Ben Alternative",    rarity: 2, url: "https://i.postimg.cc/TwSHmC89/IMG-7143.png" },
   { id: 42, name: "Gros Droitard",    rarity: 2, url: "https://i.postimg.cc/tJZNjjMt/IMG-7144.png" },
   { id: 43, name: "Jew",    rarity: 2, url: "https://i.postimg.cc/FsQ8rChx/IMG-5537.jpg" },
   { id: 44, name: "Sale Negro",    rarity: 2, url: "https://i.postimg.cc/1zg9Z7KH/IMG-7147.png" },
-  { id: 45, name: "Expulsion du territoire",    rarity: 2, url: "" },
+  { id: 45, name: "Expulsion du territoire",    rarity: 2, url: "https://i.postimg.cc/2yZKB9Nf/IMG-20260608-004012-429.jpg" },
 
   // ==================== RARETÉ 3 ====================
   { id: 46, name: "Gros Pannards",     rarity: 3, url: "https://i.postimg.cc/76Nc0Mwc/IMG-20260606-205848.jpg" },
@@ -89,7 +89,7 @@ let cardsDB = [
   { id: 74, name: "Long shlong",    rarity: 5, url: "https://i.postimg.cc/HLCVBgmc/IMG-5540.png" },
   { id: 75, name: "Claimen",    rarity: 5, url: "https://i.postimg.cc/qMRn34BX/IMG-5539.jpg" },
   { id: 76, name: "Doggy Jeffrey",    rarity: 5, url: "https://i.postimg.cc/m2FJBfxd/IMG-5535.png" },
-  { id: 77, name: "Raciste anti blanc",    rarity: 5, url: "" },
+  { id: 77, name: "Raciste anti blanc",    rarity: 5, url: "https://i.postimg.cc/tgvSvGXt/IMG-20260608-001228-979.jpg" },
   { id: 78, name: "Norman fait des videos",    rarity: 5, url: "https://i.postimg.cc/XNPpGFrk/IMG-7159.jpg" },
   { id: 79, name: "Cul soigne",    rarity: 5, url: "https://i.postimg.cc/qRbgG6jT/IMG-4847.jpg" },
   { id: 80, name: "AK de taliban",    rarity: 5, url: "https://i.postimg.cc/cJ9G6RF3/IMG-5536.jpg" },
@@ -128,7 +128,7 @@ let cardsDB = [
   { id: 109, name: "Le salut interdit", rarity: 1, url: "https://i.postimg.cc/NjxPW0vw/Screenshot-20241205-104321-Photos.jpg" },
   { id: 110, name: "Léna Zi", rarity: 2, url: "https://i.postimg.cc/NjxPW0vw/Screenshot-20241205-104321-Photos.jpg" },
   { id: 111, name: "Bonnimmigrés", rarity: 2, url: "https://i.postimg.cc/pLj6kBqG/Screenshot-20260606-123238-Tik-Tok.jpg"},
-  { id: 112, name: "Consanguines Team", rarity: 2, url: "" }
+  { id: 112, name: "Consanguines Team", rarity: 2, url: "https://i.postimg.cc/Y0zQVQ1Q/Sans-titre-8-20260608004449.png" }
 ];
 
 // =====================================================
