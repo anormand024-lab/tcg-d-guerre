@@ -165,8 +165,8 @@ let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
 // PITY SYSTEM
-// — pityCounter : nombre de boosters ouverts depuis le dernier drop ≥ rareté 5
-// — Au bout de 100 boosters, on force au moins une carte rareté 5+ dans le pack
+// — pityCounter : nombre de boosters ouverts depuis le dernier drop ≥ rareté 6
+// — Au bout de 100 boosters, on force au moins une carte rareté 6+ dans le pack
 // =====================================================
 
 let pityCounter = Number(localStorage.getItem("pityCounter")) || 0;
@@ -198,7 +198,7 @@ function updatePityDisplay() {
       <div class="pity-bar-bg">
         <div class="pity-bar-fill" style="width:${pct}%; background:${barColor};"></div>
       </div>
-      <div class="pity-sub">Légendaire garanti dans <b>${remaining}</b> booster${remaining > 1 ? "s" : ""}</div>
+      <div class="pity-sub">Secrète garantie dans <b>${remaining}</b> booster${remaining > 1 ? "s" : ""}</div>
     </div>
   `;
 }
@@ -554,7 +554,7 @@ function openBooster() {
 
   let pack;
   if (pityCounter >= PITY_THRESHOLD) {
-    // Pitié déclenchée : on force au moins une carte rareté 5+ dans le pack
+    // Pitié déclenchée : on force au moins une carte rareté 6+ dans le pack
     pack = generatePackWithPity(6);
     pityCounter = 0;
     savePity();
@@ -562,8 +562,8 @@ function openBooster() {
     showPityBanner();
   } else {
     pack = generatePack(6);
-    // Si le pack contient naturellement une carte ≥ 5, on reset la pitié
-    if (pack.some(c => c.rarity >= 5)) {
+    // Si le pack contient naturellement une carte ≥ 6, on reset la pitié
+    if (pack.some(c => c.rarity >= 6)) {
       pityCounter = 0;
       savePity();
     }
@@ -582,10 +582,13 @@ function generatePack(size) {
   return pack;
 }
 
+// =====================================================
+// PITY FORCE RARITY 6 (Secrète) au lieu de 5
+// =====================================================
 function generatePackWithPity(size) {
   let pack = [];
-  // Première carte garantie rareté 5+
-  pack.push(getRandomCard(5));
+  // Première carte garantie rareté 6+ (Secrète minimum)
+  pack.push(getRandomCard(6));
   for (let i = 1; i < size; i++) pack.push(getRandomCard());
   // Mélange le pack pour que la carte pity ne soit pas toujours en premier
   pack.sort(() => Math.random() - 0.5);
@@ -595,7 +598,7 @@ function generatePackWithPity(size) {
 function showPityBanner() {
   let banner = document.createElement("div");
   banner.className = "pity-banner";
-  banner.innerHTML = "🎯 <b>PITIÉ ACTIVÉE !</b> Tu as obtenu une carte Légendaire garantie !";
+  banner.innerHTML = "🎯 <b>PITIÉ ACTIVÉE !</b> Tu as obtenu une carte Secrète garantie !";
   document.getElementById("boosterResult").before(banner);
   setTimeout(() => banner.remove(), 4000);
 }
@@ -621,14 +624,6 @@ function animateBoosterButton() {
 // =====================================================
 // DROP ANIMATION OVERLAY — s'affiche avant le flip pour les raretés 4-7
 // =====================================================
-
-/**
- * Config des animations par rareté :
- * 4 = Épique  → flash violet + particules simples
- * 5 = Légendaire → flash orange + burst de particules
- * 6 = Secrète → flash or + holo rain
- * 7 = Diamant → séquence complète cinématique
- */
 
 const dropAnimConfigs = {
   4: {
@@ -702,7 +697,6 @@ function triggerDropAnimation(card, onDone) {
   cardName.innerText = card.name;
   cardStars.innerText = starsDisplay(card.rarity);
 
-  // Image de la carte dans l'overlay
   let imgSrc = getCardImage(card);
   cardImg.innerHTML = "";
   if (imgSrc) {
@@ -715,31 +709,26 @@ function triggerDropAnimation(card, onDone) {
     cardImg.innerHTML = `<div class="drop-card-placeholder rarity-${card.rarity}">🂠</div>`;
   }
 
-  // Letterbox bars pour rarity 6+
   if (cfg.letterboxEffect) {
     overlay.classList.add("letterbox");
   }
 
   overlay.classList.remove("hidden");
 
-  // Flash écran
   let flash = document.createElement("div");
   flash.className = "screen-flash";
   flash.style.background = cfg.screenFlashColor;
   overlay.appendChild(flash);
   setTimeout(() => flash.remove(), 400);
 
-  // Son
   if (card.rarity === 7) {
     setTimeout(playDiamond, 200);
   } else if (card.rarity >= 5) {
     setTimeout(playDing, 100);
   }
 
-  // Particules
   spawnParticles(particles, cfg);
 
-  // Shockwave
   if (cfg.shockwave) {
     setTimeout(() => {
       let sw = document.createElement("div");
@@ -750,21 +739,18 @@ function triggerDropAnimation(card, onDone) {
     }, 200);
   }
 
-  // Reveal de la carte dans l'overlay
   setTimeout(() => {
     cardReveal.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)";
     cardReveal.style.opacity = "1";
     cardReveal.style.transform = "scale(1)";
   }, 350);
 
-  // Fermer l'overlay et continuer
   setTimeout(() => {
     overlay.classList.add("hidden");
     overlay.classList.remove("letterbox");
     onDone();
   }, cfg.duration);
 
-  // Clic pour skip
   overlay.onclick = () => {
     overlay.classList.add("hidden");
     overlay.classList.remove("letterbox");
@@ -774,7 +760,7 @@ function triggerDropAnimation(card, onDone) {
 }
 
 function spawnParticles(container, cfg) {
-  let cx = 50, cy = 50; // % du centre
+  let cx = 50, cy = 50;
 
   for (let i = 0; i < cfg.particleCount; i++) {
     let p = document.createElement("div");
@@ -786,7 +772,7 @@ function spawnParticles(container, cfg) {
     let color = cfg.particleColors[Math.floor(Math.random() * cfg.particleColors.length)];
     let delay = Math.random() * 0.4;
     let dur   = 0.6 + Math.random() * 0.8;
-    let shape = Math.random() > 0.5 ? "50%" : "2px"; // cercle ou étoile
+    let shape = Math.random() > 0.5 ? "50%" : "2px";
     let tx = Math.cos(angle * Math.PI / 180) * dist;
     let ty = Math.sin(angle * Math.PI / 180) * dist;
 
@@ -803,7 +789,6 @@ function spawnParticles(container, cfg) {
     container.appendChild(p);
   }
 
-  // Pour rarity 7 : ajouter des étoiles tombantes
   if (cfg.particleCount >= 80) {
     for (let i = 0; i < 20; i++) {
       let star = document.createElement("div");
@@ -833,7 +818,6 @@ function renderBooster(pack) {
   let isAnimating = false;
   let isFlipped = false;
   let revealed = new Array(pack.length).fill(false);
-  // Suivi des animations drop déjà déclenchées
   let dropTriggered = new Array(pack.length).fill(false);
 
   let counter = document.createElement("div");
@@ -937,14 +921,11 @@ function renderBooster(pack) {
 
     let card = pack[currentIndex];
 
-    // Si rareté ≥ 4 et animation pas encore jouée pour cette carte
     if (card.rarity >= 4 && !dropTriggered[currentIndex]) {
       dropTriggered[currentIndex] = true;
       isAnimating = true;
 
-      // On déclenche l'animation overlay, PUIS on flip
       triggerDropAnimation(card, () => {
-        // Après l'overlay, on fait le flip normal
         actuallyFlip(card);
       });
     } else {
@@ -1120,6 +1101,97 @@ function showRecap(pack) {
 }
 
 // =====================================================
+// CARD ZOOM MODAL — Affichage plein écran d'une carte
+// =====================================================
+
+function openCardModal(card) {
+  // Créer l'overlay s'il n'existe pas
+  let modal = document.getElementById("cardModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "cardModal";
+    modal.className = "card-modal hidden";
+    modal.innerHTML = `
+      <div class="card-modal-backdrop"></div>
+      <div class="card-modal-content">
+        <button class="card-modal-close" id="cardModalClose">✕</button>
+        <div class="card-modal-img-wrap" id="cardModalImgWrap"></div>
+        <div class="card-modal-info">
+          <div class="card-modal-name" id="cardModalName"></div>
+          <div class="card-modal-stars" id="cardModalStars"></div>
+          <div class="card-modal-rarity-label" id="cardModalRarityLabel"></div>
+          <div class="card-modal-copies" id="cardModalCopies"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Fermer sur clic backdrop
+    modal.querySelector(".card-modal-backdrop").addEventListener("click", closeCardModal);
+    modal.querySelector("#cardModalClose").addEventListener("click", closeCardModal);
+
+    // Fermer sur Escape
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeCardModal();
+    });
+  }
+
+  const rarityLabels = {
+    1: "Commune",
+    2: "Peu Commune",
+    3: "Rare",
+    4: "Épique",
+    5: "Légendaire",
+    6: "Secrète",
+    7: "Full Diamant"
+  };
+
+  let imgSrc = getCardImage(card);
+  let data = collection[card.id];
+
+  // Remplir les infos
+  let imgWrap = modal.querySelector("#cardModalImgWrap");
+  imgWrap.innerHTML = "";
+  imgWrap.className = "card-modal-img-wrap rarity-" + card.rarity;
+  if (card.rarity === 6) imgWrap.classList.add("holo");
+
+  if (imgSrc) {
+    let img = document.createElement("img");
+    img.src = imgSrc;
+    img.className = "card-modal-img";
+    imgWrap.appendChild(img);
+  } else {
+    let placeholder = document.createElement("div");
+    placeholder.className = "card-modal-placeholder";
+    placeholder.innerText = "🂠";
+    imgWrap.appendChild(placeholder);
+  }
+
+  modal.querySelector("#cardModalName").innerText = card.name;
+  modal.querySelector("#cardModalStars").innerText = starsDisplay(card.rarity);
+  modal.querySelector("#cardModalRarityLabel").innerText = rarityLabels[card.rarity] || "";
+  modal.querySelector("#cardModalCopies").innerText = data ? "x" + data.copies + " exemplaire" + (data.copies > 1 ? "s" : "") : "";
+
+  // Appliquer la couleur de rareté au label
+  const rarityColors = {
+    1: "#888780", 2: "#378ADD", 3: "#1D9E75",
+    4: "#7F77DD", 5: "#EF9F27", 6: "gold", 7: "#00cfff"
+  };
+  modal.querySelector("#cardModalRarityLabel").style.color = rarityColors[card.rarity] || "white";
+
+  // Afficher
+  modal.classList.remove("hidden");
+  setTimeout(() => modal.classList.add("visible"), 10);
+}
+
+function closeCardModal() {
+  let modal = document.getElementById("cardModal");
+  if (!modal) return;
+  modal.classList.remove("visible");
+  setTimeout(() => modal.classList.add("hidden"), 300);
+}
+
+// =====================================================
 // COLLECTION RENDER
 // =====================================================
 
@@ -1198,6 +1270,10 @@ function renderCollection() {
     } else {
       el.className = "card rarity-" + card.rarity;
       if (card.rarity === 6) el.classList.add("holo");
+
+      // ✅ NOUVEAU : Clic sur carte → zoom modal
+      el.style.cursor = "pointer";
+      el.addEventListener("click", () => openCardModal(card));
 
       let imgSrc = getCardImage(card);
       if (imgSrc) {
