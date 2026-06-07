@@ -9,6 +9,7 @@
   <div class="app">
     <header class="topbar">
       <h1>TCG Pocket</h1>
+      <button id="musicToggleBtn" onclick="toggleMusic()">🔇 Musique OFF</button>
     </header>
     <nav class="nav">
       <button onclick="showTab('booster')">🎁 Booster</button>
@@ -23,7 +24,8 @@
             Ouvrir un pack (6 cartes)
           </button>
           <p id="cooldown"></p>
-          <div id="boosterResult" class="cards-grid"></div>
+          <div id="pityDisplay"></div>
+          <div id="boosterResult"></div>
         </div>
       </section>
       <section id="collection" class="tab">
@@ -40,10 +42,27 @@
           <input id="imgUrlInput" type="text" placeholder="URL de l'image (optionnel)" style="display:block; width:100%; margin-bottom:8px; padding:10px; border-radius:10px; border:none; font-size:14px;">
           <input type="file" id="imgInput" style="display:block; margin-bottom:12px;">
           <button class="primary-btn" onclick="uploadImage()">Enregistrer</button>
+          <hr style="border:1px solid rgba(255,255,255,0.1); margin: 24px 0;">
+          <h3 style="color:#ff6b6b; margin-bottom:12px;">⚠️ Zone dangereuse</h3>
+          <button class="reset-btn" onclick="resetCollection()">🗑️ Réinitialiser la collection</button>
         </div>
       </section>
     </main>
   </div>
+
+  <!-- Overlay d'animation de drop rare -->
+  <div id="dropOverlay" class="drop-overlay hidden">
+    <div id="dropOverlayInner" class="drop-overlay-inner">
+      <div id="dropParticles" class="drop-particles"></div>
+      <div id="dropCardReveal" class="drop-card-reveal">
+        <div id="dropCardImg" class="drop-card-img"></div>
+        <div id="dropCardName" class="drop-card-name"></div>
+        <div id="dropCardStars" class="drop-card-stars"></div>
+        <div id="dropCardLabel" class="drop-card-label"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

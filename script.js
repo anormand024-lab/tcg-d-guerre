@@ -153,6 +153,46 @@ let collection = JSON.parse(localStorage.getItem("collection")) || {};
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
+// PITY SYSTEM
+// — pityCounter : nombre de boosters ouverts depuis le dernier drop ≥ rareté 5
+// — Au bout de 100 boosters, on force au moins une carte rareté 5+ dans le pack
+// =====================================================
+
+let pityCounter = Number(localStorage.getItem("pityCounter")) || 0;
+const PITY_THRESHOLD = 100; // tous les 100 boosters
+
+function savePity() {
+  localStorage.setItem("pityCounter", pityCounter);
+}
+
+function updatePityDisplay() {
+  let el = document.getElementById("pityDisplay");
+  if (!el) return;
+  let remaining = PITY_THRESHOLD - pityCounter;
+  let pct = Math.round((pityCounter / PITY_THRESHOLD) * 100);
+
+  // Couleur qui vire au orange/rouge quand on approche
+  let barColor = pct < 50
+    ? "#4dd2ff"
+    : pct < 75
+      ? "#EF9F27"
+      : "#ff4d4d";
+
+  el.innerHTML = `
+    <div class="pity-block">
+      <div class="pity-label">
+        <span>🎯 Pitié</span>
+        <span>${pityCounter} / ${PITY_THRESHOLD} boosters</span>
+      </div>
+      <div class="pity-bar-bg">
+        <div class="pity-bar-fill" style="width:${pct}%; background:${barColor};"></div>
+      </div>
+      <div class="pity-sub">Légendaire garanti dans <b>${remaining}</b> booster${remaining > 1 ? "s" : ""}</div>
+    </div>
+  `;
+}
+
+// =====================================================
 // AUDIO SYSTEM — Web Audio API TCG sounds
 // =====================================================
 
@@ -177,37 +217,33 @@ function startBackgroundMusic() {
     if (bgMusicPlaying) return;
     bgMusicPlaying = true;
 
-    // Notes de la mélodie (fréquences en Hz) — ambiance mystique TCG
-    // Gamme pentatonique mineure : Do, Mib, Fa, Sol, Sib
     const melody = [
-      { freq: 261.63, dur: 0.5 }, // C4
-      { freq: 311.13, dur: 0.5 }, // Eb4
-      { freq: 349.23, dur: 0.5 }, // F4
-      { freq: 392.00, dur: 0.5 }, // G4
-      { freq: 349.23, dur: 0.5 }, // F4
-      { freq: 311.13, dur: 0.5 }, // Eb4
-      { freq: 261.63, dur: 1.0 }, // C4
-      { freq: 233.08, dur: 0.5 }, // Bb3
-      { freq: 261.63, dur: 0.5 }, // C4
-      { freq: 311.13, dur: 0.5 }, // Eb4
-      { freq: 392.00, dur: 0.5 }, // G4
-      { freq: 466.16, dur: 0.5 }, // Bb4
-      { freq: 392.00, dur: 0.5 }, // G4
-      { freq: 349.23, dur: 0.5 }, // F4
-      { freq: 311.13, dur: 1.0 }, // Eb4
-      { freq: 261.63, dur: 1.0 }, // C4
+      { freq: 261.63, dur: 0.5 },
+      { freq: 311.13, dur: 0.5 },
+      { freq: 349.23, dur: 0.5 },
+      { freq: 392.00, dur: 0.5 },
+      { freq: 349.23, dur: 0.5 },
+      { freq: 311.13, dur: 0.5 },
+      { freq: 261.63, dur: 1.0 },
+      { freq: 233.08, dur: 0.5 },
+      { freq: 261.63, dur: 0.5 },
+      { freq: 311.13, dur: 0.5 },
+      { freq: 392.00, dur: 0.5 },
+      { freq: 466.16, dur: 0.5 },
+      { freq: 392.00, dur: 0.5 },
+      { freq: 349.23, dur: 0.5 },
+      { freq: 311.13, dur: 1.0 },
+      { freq: 261.63, dur: 1.0 },
     ];
 
-    // Basse (octave inférieur)
     const bass = [
-      { freq: 65.41,  dur: 2.0 }, // C2
-      { freq: 87.31,  dur: 2.0 }, // F2
-      { freq: 73.42,  dur: 2.0 }, // D2
-      { freq: 65.41,  dur: 2.0 }, // C2
+      { freq: 65.41,  dur: 2.0 },
+      { freq: 87.31,  dur: 2.0 },
+      { freq: 73.42,  dur: 2.0 },
+      { freq: 65.41,  dur: 2.0 },
     ];
 
     let totalDur = melody.reduce((s, n) => s + n.dur, 0);
-    let bassTotalDur = bass.reduce((s, n) => s + n.dur, 0);
 
     function scheduleMelody(startTime) {
       let t = startTime;
@@ -250,7 +286,6 @@ function startBackgroundMusic() {
       });
     }
 
-    // Pad d'ambiance (drone)
     function schedulePad(startTime, duration) {
       [130.81, 196.00, 233.08].forEach((freq, i) => {
         let osc = ctx.createOscillator();
@@ -269,13 +304,11 @@ function startBackgroundMusic() {
       });
     }
 
-    // Boucle : on replanifie avant la fin
     function loop(startTime) {
       if (!bgMusicPlaying) return;
       scheduleMelody(startTime);
       scheduleBass(startTime);
       schedulePad(startTime, totalDur);
-      // On replanifie la boucle 0.1s avant la fin
       let delay = (startTime - ctx.currentTime + totalDur - 0.1) * 1000;
       setTimeout(() => loop(startTime + totalDur), Math.max(delay, 0));
     }
@@ -293,7 +326,6 @@ function stopBackgroundMusic() {
 }
 
 function toggleMusic() {
-  // On s'assure que l'audioCtx est résumé (nécessaire après interaction utilisateur)
   if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
   if (bgMusicPlaying) {
     stopBackgroundMusic();
@@ -471,9 +503,16 @@ function getRandomRarity() {
   return 1;
 }
 
-function getRandomCard() {
-  let rarity = getRandomRarity();
+function getRandomCard(forcedMinRarity = null) {
+  let rarity;
+  if (forcedMinRarity !== null) {
+    // Forcer une rareté >= forcedMinRarity
+    do { rarity = getRandomRarity(); } while (rarity < forcedMinRarity);
+  } else {
+    rarity = getRandomRarity();
+  }
   let pool = cardsDB.filter(c => c.rarity === rarity);
+  if (pool.length === 0) pool = cardsDB.filter(c => c.rarity >= forcedMinRarity);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -492,12 +531,34 @@ function openBooster() {
   lastBoosterOpen = now;
   localStorage.setItem("lastBoosterOpen", lastBoosterOpen);
   animateBoosterButton();
-  // Démarre la musique si pas encore lancée (première interaction utilisateur)
+
   if (!bgMusicPlaying && audioCtx === null) {
     startBackgroundMusic();
   }
   playBoosterOpen();
-  let pack = generatePack(6);
+
+  // Incrémenter le compteur de pitié
+  pityCounter++;
+  savePity();
+
+  let pack;
+  if (pityCounter >= PITY_THRESHOLD) {
+    // Pitié déclenchée : on force au moins une carte rareté 5+ dans le pack
+    pack = generatePackWithPity(6);
+    pityCounter = 0;
+    savePity();
+    // Afficher un message de pitié
+    showPityBanner();
+  } else {
+    pack = generatePack(6);
+    // Si le pack contient naturellement une carte ≥ 5, on reset la pitié
+    if (pack.some(c => c.rarity >= 5)) {
+      pityCounter = 0;
+      savePity();
+    }
+  }
+
+  updatePityDisplay();
   saveCollection(pack);
   renderBooster(pack);
   renderCollection();
@@ -508,6 +569,24 @@ function generatePack(size) {
   let pack = [];
   for (let i = 0; i < size; i++) pack.push(getRandomCard());
   return pack;
+}
+
+function generatePackWithPity(size) {
+  let pack = [];
+  // Première carte garantie rareté 5+
+  pack.push(getRandomCard(5));
+  for (let i = 1; i < size; i++) pack.push(getRandomCard());
+  // Mélange le pack pour que la carte pity ne soit pas toujours en premier
+  pack.sort(() => Math.random() - 0.5);
+  return pack;
+}
+
+function showPityBanner() {
+  let banner = document.createElement("div");
+  banner.className = "pity-banner";
+  banner.innerHTML = "🎯 <b>PITIÉ ACTIVÉE !</b> Tu as obtenu une carte Légendaire garantie !";
+  document.getElementById("boosterResult").before(banner);
+  setTimeout(() => banner.remove(), 4000);
 }
 
 function saveCollection(pack) {
@@ -529,6 +608,209 @@ function animateBoosterButton() {
 }
 
 // =====================================================
+// DROP ANIMATION OVERLAY — s'affiche avant le flip pour les raretés 4-7
+// =====================================================
+
+/**
+ * Config des animations par rareté :
+ * 4 = Épique  → flash violet + particules simples
+ * 5 = Légendaire → flash orange + burst de particules
+ * 6 = Secrète → flash or + holo rain
+ * 7 = Diamant → séquence complète cinématique
+ */
+
+const dropAnimConfigs = {
+  4: {
+    label: "✦ ÉPIQUE ✦",
+    labelColor: "#7F77DD",
+    bgColor: "radial-gradient(circle, rgba(127,119,221,0.35) 0%, rgba(10,10,30,0.98) 70%)",
+    particleColors: ["#7F77DD", "#b3aeff", "#ffffff"],
+    particleCount: 18,
+    screenFlashColor: "rgba(127,119,221,0.5)",
+    duration: 1600,
+    shockwave: false,
+    letterboxEffect: false,
+  },
+  5: {
+    label: "★ LÉGENDAIRE ★",
+    labelColor: "#EF9F27",
+    bgColor: "radial-gradient(circle, rgba(239,159,39,0.4) 0%, rgba(10,5,0,0.98) 70%)",
+    particleColors: ["#EF9F27", "#ffdd80", "#ffffff", "#ff9a3c"],
+    particleCount: 32,
+    screenFlashColor: "rgba(239,159,39,0.6)",
+    duration: 2200,
+    shockwave: true,
+    letterboxEffect: false,
+  },
+  6: {
+    label: "◈ SECRÈTE ◈",
+    labelColor: "gold",
+    bgColor: "radial-gradient(circle, rgba(255,215,0,0.45) 0%, rgba(5,5,5,0.99) 65%)",
+    particleColors: ["gold", "#fff700", "#ff00ff", "#00ffff", "#ffffff"],
+    particleCount: 50,
+    screenFlashColor: "rgba(255,215,0,0.8)",
+    duration: 3000,
+    shockwave: true,
+    letterboxEffect: true,
+  },
+  7: {
+    label: "💎 FULL DIAMANT 💎",
+    labelColor: "#00cfff",
+    bgColor: "radial-gradient(circle, rgba(0,207,255,0.5) 0%, rgba(0,5,20,0.99) 60%)",
+    particleColors: ["#00cfff", "#ffffff", "#80e8ff", "#0055ff", "#00ffcc"],
+    particleCount: 80,
+    screenFlashColor: "rgba(0,207,255,0.9)",
+    duration: 4000,
+    shockwave: true,
+    letterboxEffect: true,
+  }
+};
+
+function triggerDropAnimation(card, onDone) {
+  let cfg = dropAnimConfigs[card.rarity];
+  if (!cfg) { onDone(); return; }
+
+  let overlay = document.getElementById("dropOverlay");
+  let inner   = document.getElementById("dropOverlayInner");
+  let particles = document.getElementById("dropParticles");
+  let cardReveal = document.getElementById("dropCardReveal");
+  let cardImg    = document.getElementById("dropCardImg");
+  let cardName   = document.getElementById("dropCardName");
+  let cardStars  = document.getElementById("dropCardStars");
+  let cardLabel  = document.getElementById("dropCardLabel");
+
+  // Reset
+  overlay.className = "drop-overlay";
+  inner.style.background = cfg.bgColor;
+  particles.innerHTML = "";
+  cardReveal.style.opacity = "0";
+  cardReveal.style.transform = "scale(0.5)";
+  cardLabel.innerText = cfg.label;
+  cardLabel.style.color = cfg.labelColor;
+  cardLabel.style.textShadow = `0 0 30px ${cfg.labelColor}, 0 0 60px ${cfg.labelColor}`;
+  cardName.innerText = card.name;
+  cardStars.innerText = starsDisplay(card.rarity);
+
+  // Image de la carte dans l'overlay
+  let imgSrc = getCardImage(card);
+  cardImg.innerHTML = "";
+  if (imgSrc) {
+    let img = document.createElement("img");
+    img.src = imgSrc;
+    img.className = "drop-card-img-el rarity-" + card.rarity;
+    if (card.rarity === 6) img.classList.add("holo");
+    cardImg.appendChild(img);
+  } else {
+    cardImg.innerHTML = `<div class="drop-card-placeholder rarity-${card.rarity}">🂠</div>`;
+  }
+
+  // Letterbox bars pour rarity 6+
+  if (cfg.letterboxEffect) {
+    overlay.classList.add("letterbox");
+  }
+
+  overlay.classList.remove("hidden");
+
+  // Flash écran
+  let flash = document.createElement("div");
+  flash.className = "screen-flash";
+  flash.style.background = cfg.screenFlashColor;
+  overlay.appendChild(flash);
+  setTimeout(() => flash.remove(), 400);
+
+  // Son
+  if (card.rarity === 7) {
+    setTimeout(playDiamond, 200);
+  } else if (card.rarity >= 5) {
+    setTimeout(playDing, 100);
+  }
+
+  // Particules
+  spawnParticles(particles, cfg);
+
+  // Shockwave
+  if (cfg.shockwave) {
+    setTimeout(() => {
+      let sw = document.createElement("div");
+      sw.className = "shockwave";
+      sw.style.borderColor = cfg.labelColor;
+      overlay.appendChild(sw);
+      setTimeout(() => sw.remove(), 800);
+    }, 200);
+  }
+
+  // Reveal de la carte dans l'overlay
+  setTimeout(() => {
+    cardReveal.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)";
+    cardReveal.style.opacity = "1";
+    cardReveal.style.transform = "scale(1)";
+  }, 350);
+
+  // Fermer l'overlay et continuer
+  setTimeout(() => {
+    overlay.classList.add("hidden");
+    overlay.classList.remove("letterbox");
+    onDone();
+  }, cfg.duration);
+
+  // Clic pour skip
+  overlay.onclick = () => {
+    overlay.classList.add("hidden");
+    overlay.classList.remove("letterbox");
+    overlay.onclick = null;
+    onDone();
+  };
+}
+
+function spawnParticles(container, cfg) {
+  let cx = 50, cy = 50; // % du centre
+
+  for (let i = 0; i < cfg.particleCount; i++) {
+    let p = document.createElement("div");
+    p.className = "drop-particle";
+
+    let angle = (Math.random() * 360);
+    let dist  = 80 + Math.random() * 220;
+    let size  = 4 + Math.random() * 10;
+    let color = cfg.particleColors[Math.floor(Math.random() * cfg.particleColors.length)];
+    let delay = Math.random() * 0.4;
+    let dur   = 0.6 + Math.random() * 0.8;
+    let shape = Math.random() > 0.5 ? "50%" : "2px"; // cercle ou étoile
+    let tx = Math.cos(angle * Math.PI / 180) * dist;
+    let ty = Math.sin(angle * Math.PI / 180) * dist;
+
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      background:${color};
+      border-radius:${shape};
+      left:${cx}%; top:${cy}%;
+      transform:translate(-50%,-50%);
+      --tx:${tx}px; --ty:${ty}px;
+      animation: particleBurst ${dur}s ease-out ${delay}s forwards;
+      box-shadow: 0 0 ${size * 2}px ${color};
+    `;
+    container.appendChild(p);
+  }
+
+  // Pour rarity 7 : ajouter des étoiles tombantes
+  if (cfg.particleCount >= 80) {
+    for (let i = 0; i < 20; i++) {
+      let star = document.createElement("div");
+      star.className = "drop-star-fall";
+      star.style.cssText = `
+        left: ${Math.random() * 100}%;
+        animation-delay: ${Math.random() * 1}s;
+        animation-duration: ${0.8 + Math.random() * 0.6}s;
+        color: #00cfff;
+        font-size: ${10 + Math.random() * 14}px;
+      `;
+      star.innerText = "✦";
+      container.appendChild(star);
+    }
+  }
+}
+
+// =====================================================
 // BOOSTER RENDER — FLIP 3D + RÉCAPITULATIF FINAL
 // =====================================================
 
@@ -539,8 +821,9 @@ function renderBooster(pack) {
   let currentIndex = 0;
   let isAnimating = false;
   let isFlipped = false;
-  // Suivi des cartes révélées pour le récap
   let revealed = new Array(pack.length).fill(false);
+  // Suivi des animations drop déjà déclenchées
+  let dropTriggered = new Array(pack.length).fill(false);
 
   let counter = document.createElement("div");
   counter.className = "swipe-counter";
@@ -589,7 +872,6 @@ function renderBooster(pack) {
   swipeHint.innerText = "← swipe ou utilise les flèches →";
   container.appendChild(swipeHint);
 
-  // Placeholder récapitulatif — sera rempli à la fin
   let recapContainer = document.createElement("div");
   recapContainer.id = "boosterRecap";
   recapContainer.style.display = "none";
@@ -606,7 +888,6 @@ function renderBooster(pack) {
     flipWrapper.className = "rarity-" + card.rarity;
     flipWrapper.id = "flipWrapper";
 
-    // On marque la carte comme révélée
     revealed[currentIndex] = true;
 
     if (data && data.copies === 1) {
@@ -635,7 +916,6 @@ function renderBooster(pack) {
     cardBack.appendChild(rarity);
     cardBack.appendChild(copies);
 
-    // Vérifier si toutes les cartes sont révélées → afficher le récap
     if (revealed.every(r => r)) {
       setTimeout(() => showRecap(pack), 800);
     }
@@ -643,20 +923,33 @@ function renderBooster(pack) {
 
   function doFlip() {
     if (isAnimating || isFlipped) return;
+
+    let card = pack[currentIndex];
+
+    // Si rareté ≥ 4 et animation pas encore jouée pour cette carte
+    if (card.rarity >= 4 && !dropTriggered[currentIndex]) {
+      dropTriggered[currentIndex] = true;
+      isAnimating = true;
+
+      // On déclenche l'animation overlay, PUIS on flip
+      triggerDropAnimation(card, () => {
+        // Après l'overlay, on fait le flip normal
+        actuallyFlip(card);
+      });
+    } else {
+      actuallyFlip(card);
+    }
+  }
+
+  function actuallyFlip(card) {
+    if (isFlipped) return;
     isAnimating = true;
     isFlipped = true;
 
     playFlip();
-    fillCardBack(pack[currentIndex]);
+    fillCardBack(card);
     flipWrapper.classList.add("flipped");
     tapHint.style.opacity = "0";
-
-    let card = pack[currentIndex];
-    if (card.rarity === 7) {
-      setTimeout(playDiamond, 300);
-    } else if (card.rarity >= 5) {
-      setTimeout(playDing, 300);
-    }
 
     nextBtn.disabled = (currentIndex >= pack.length - 1);
     prevBtn.disabled = (currentIndex <= 0);
@@ -755,7 +1048,7 @@ function renderBooster(pack) {
 }
 
 // =====================================================
-// RÉCAPITULATIF BOOSTER — affiche les 6 cartes côte à côte
+// RÉCAPITULATIF BOOSTER
 // =====================================================
 
 function showRecap(pack) {
@@ -765,13 +1058,11 @@ function showRecap(pack) {
   recapContainer.innerHTML = "";
   recapContainer.style.display = "block";
 
-  // Titre
   let title = document.createElement("div");
   title.className = "recap-title";
   title.innerText = "🎴 Récapitulatif du pack";
   recapContainer.appendChild(title);
 
-  // Grille des 6 cartes
   let grid = document.createElement("div");
   grid.className = "recap-grid";
   recapContainer.appendChild(grid);
@@ -783,10 +1074,8 @@ function showRecap(pack) {
     let el = document.createElement("div");
     el.className = "recap-card rarity-" + card.rarity;
     if (card.rarity === 6) el.classList.add("holo");
-    // Animation décalée pour un effet de reveal en cascade
     el.style.animationDelay = (i * 0.1) + "s";
 
-    // Badge NEW
     if (data && data.copies === 1) {
       let badge = document.createElement("div");
       badge.className = "recap-new-badge";
@@ -816,7 +1105,6 @@ function showRecap(pack) {
     grid.appendChild(el);
   });
 
-  // Scroll vers le récap
   setTimeout(() => recapContainer.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 }
 
@@ -927,6 +1215,24 @@ function renderCollection() {
 }
 
 // =====================================================
+// RESET COLLECTION
+// =====================================================
+
+function resetCollection() {
+  let confirmed = confirm("⚠️ Es-tu sûr de vouloir réinitialiser toute ta collection ? Cette action est irréversible !");
+  if (!confirmed) return;
+  collection = {};
+  pityCounter = 0;
+  localStorage.removeItem("collection");
+  localStorage.removeItem("pityCounter");
+  savePity();
+  renderCollection();
+  updatePityDisplay();
+  document.getElementById("boosterResult").innerHTML = "";
+  alert("✅ Collection réinitialisée !");
+}
+
+// =====================================================
 // COOLDOWN SYSTEM
 // =====================================================
 
@@ -980,3 +1286,4 @@ function uploadImage() {
 renderCollection();
 startCooldown();
 updateMusicBtn();
+updatePityDisplay();
