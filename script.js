@@ -128,7 +128,18 @@ let cardsDB = [
   { id: 109, name: "Le salut interdit", rarity: 1, url: "https://i.postimg.cc/NjxPW0vw/Screenshot-20241205-104321-Photos.jpg" },
   { id: 110, name: "Léna Zi", rarity: 2, url: "https://i.postimg.cc/NjxPW0vw/Screenshot-20241205-104321-Photos.jpg" },
   { id: 111, name: "Bonnimmigrés", rarity: 2, url: "https://i.postimg.cc/pLj6kBqG/Screenshot-20260606-123238-Tik-Tok.jpg"},
-  { id: 112, name: "Consanguines Team", rarity: 2, url: "https://i.postimg.cc/Y0zQVQ1Q/Sans-titre-8-20260608004449.png" }
+  { id: 112, name: "Consanguines Team", rarity: 2, url: "https://i.postimg.cc/Y0zQVQ1Q/Sans-titre-8-20260608004449.png" },
+  { id: 113, name: "Netflix n' Chill", rarity: 2, url: "" },
+  { id: 114, name: "Détraqué ******", rarity: 2, url: "" },
+  { id: 115, name: "Encule moi vasy, essaye essaye, ptit PD va", rarity: 4, url: "" },
+  { id: 116, name: "Ta snap ?", rarity: 2, url: "" },
+  { id: 117, name: "KKK", rarity: 6, url: "" },
+  { id: 118, name: "Femme de l'obese", rarity: 2, url: "" },
+  { id: 119, name: "Chient mort", rarity: 2, url: "" },
+  { id: 120, name: "Le Diable", rarity: 1, url: "" },
+  { id: 121, name: "les chaussueres a mois", rarity: 2, url: "" },
+  { id: 122, name: "Swan &", rarity: 1, url: "" },
+  { id: 123, name: "Negro", rarity: 6, url: "" }
 ];
 
 // =====================================================
