@@ -127,7 +127,8 @@ let cardsDB = [
   { id: 108, name: "Le Coach", rarity: 1, url: "https://i.postimg.cc/VkTsXPzb/20251010-121708(0).jpg" },
   { id: 109, name: "Le salut interdit", rarity: 1, url: "https://i.postimg.cc/NjxPW0vw/Screenshot-20241205-104321-Photos.jpg" },
   { id: 110, name: "Léna Zi", rarity: 2, url: "https://i.postimg.cc/NjxPW0vw/Screenshot-20241205-104321-Photos.jpg" },
-  { id: 111, name: "Bonnimmigrés", rarity: 2, url: "https://i.postimg.cc/pLj6kBqG/Screenshot-20260606-123238-Tik-Tok.jpg"}
+  { id: 111, name: "Bonnimmigrés", rarity: 2, url: "https://i.postimg.cc/pLj6kBqG/Screenshot-20260606-123238-Tik-Tok.jpg"},
+  { id: 112, name: "Consanguines Team", rarity: 2, url: "" }
 ];
 
 // =====================================================
