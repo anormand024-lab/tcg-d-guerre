@@ -4,16 +4,25 @@
 
 body {
   margin: 0;
-  font-family: 'Arial', sans-serif;
-  background: radial-gradient(circle at top, #1a1f3c, #0b0d18);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0f0f1e 0%, #1a1f3c 25%, #2d1b4e 50%, #1a1f3c 75%, #0f0f1e 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
   color: white;
   overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .app {
   max-width: 480px;
   margin: auto;
   padding-bottom: 40px;
+  background: linear-gradient(to bottom, rgba(20, 20, 35, 0.7) 0%, rgba(10, 10, 25, 0.8) 100%);
 }
 
 /* ===================================================== */
@@ -22,14 +31,16 @@ body {
 
 .topbar {
   text-align: center;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  padding: 15px;
-  letter-spacing: 2px;
+  padding: 20px 15px;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  background: rgba(255,255,255,0.05);
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, rgba(100, 150, 255, 0.2) 0%, rgba(200, 100, 255, 0.2) 100%);
+  border-bottom: 3px solid rgba(100, 200, 255, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
   position: relative;
+  backdrop-filter: blur(10px);
 }
 
 /* ===================================================== */
@@ -65,42 +76,68 @@ body {
 
 .nav {
   display: flex;
-  gap: 6px;
-  padding: 10px;
+  gap: 8px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .nav button {
   flex: 1;
-  padding: 11px 4px;
-  border-radius: 16px;
-  border: none;
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.2);
   font-weight: bold;
   font-size: 12px;
   cursor: pointer;
   color: white;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.nav button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.2);
+  transition: left 0.3s ease;
+}
+
+.nav button:hover::before {
+  left: 100%;
 }
 
 .nav button:nth-child(1) {
-  background: linear-gradient(135deg, #ff4d4d, #ff9a3c);
+  background: linear-gradient(135deg, #ff6b6b, #ff8e72);
 }
 
 .nav button:nth-child(2) {
-  background: linear-gradient(135deg, #4dd2ff, #4d7cff);
+  background: linear-gradient(135deg, #4ecdc4, #44a3d2);
 }
 
 .nav button:nth-child(3) {
-  background: linear-gradient(135deg, #ffe066, #ffb300);
-  color: #2a1800;
+  background: linear-gradient(135deg, #ffd93d, #ffb84d);
+  color: #1a1a1a;
 }
 
 .nav button:nth-child(4) {
-  background: linear-gradient(135deg, #b84dff, #ff4df0);
+  background: linear-gradient(135deg, #a78bfa, #d946ef);
+}
+
+.nav button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255,255,255,0.4);
 }
 
 .nav button:active {
-  transform: scale(0.92);
-  filter: brightness(1.2);
+  transform: scale(0.95);
+  filter: brightness(0.9);
 }
 
 /* ===================================================== */
@@ -114,6 +151,12 @@ body {
 
 .tab.active {
   display: block;
+  animation: fadeInTab 0.3s ease;
+}
+
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===================================================== */
@@ -121,7 +164,12 @@ body {
 /* ===================================================== */
 
 .panel {
-  padding: 10px;
+  padding: 15px;
+  background: linear-gradient(135deg, rgba(50, 50, 100, 0.1) 0%, rgba(30, 30, 60, 0.1) 100%);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  margin: 10px;
+  border: 1px solid rgba(100, 150, 255, 0.2);
 }
 
 /* ===================================================== */
@@ -129,17 +177,41 @@ body {
 /* ===================================================== */
 
 .primary-btn {
-  width: 100%;
+  width: calc(100% - 4px);
+  margin: 2px;
   padding: 18px;
-  border-radius: 18px;
-  border: none;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.2);
   font-size: 16px;
   font-weight: bold;
   color: white;
   cursor: pointer;
   background: linear-gradient(135deg, #ffcc00, #ff5e62);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 8px 20px rgba(255, 100, 98, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.2);
+  transition: left 0.4s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(255, 100, 98, 0.5);
+  border-color: rgba(255,255,255,0.4);
+}
+
+.primary-btn:hover::before {
+  left: 100%;
 }
 
 .primary-btn:active {
@@ -331,23 +403,36 @@ body {
 
 #cooldown {
   text-align: center;
-  margin-top: 10px;
+  margin: 15px 10px 10px;
+  padding: 12px 16px;
   font-weight: bold;
   font-size: 14px;
-  color: gold;
+  color: #ffd700;
   letter-spacing: 1px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
+  border: 1.5px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+  animation: cooldownPulse 1s ease-in-out infinite;
 }
 
+@keyframes cooldownPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
+}
+
+/* ===================================================== */
 /* ===================================================== */
 /* PITY DISPLAY */
 /* ===================================================== */
 
 .pity-block {
-  margin: 12px 0 4px 0;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.05);
+  margin: 12px 10px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(100, 150, 255, 0.08) 0%, rgba(150, 100, 255, 0.08) 100%);
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(100, 200, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(100, 150, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .pity-label {
@@ -356,29 +441,35 @@ body {
   align-items: center;
   font-size: 12px;
   font-weight: bold;
-  color: rgba(255,255,255,0.85);
-  margin-bottom: 6px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 10px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .pity-bar-bg {
   width: 100%;
-  height: 6px;
-  background: rgba(255,255,255,0.1);
+  height: 8px;
+  background: rgba(255,255,255,0.08);
   border-radius: 99px;
   overflow: hidden;
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .pity-bar-fill {
   height: 100%;
   border-radius: 99px;
-  transition: width 0.6s ease, background 0.6s ease;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.6s ease;
+  background: linear-gradient(90deg, #4ecdc4, #44a3d2);
+  box-shadow: 0 0 10px rgba(100, 200, 255, 0.6);
 }
 
 .pity-sub {
-  margin-top: 5px;
+  margin-top: 8px;
   font-size: 11px;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.6);
   text-align: right;
+  font-weight: 600;
 }
 
 /* ===================================================== */
@@ -1444,18 +1535,6 @@ body {
 
 .card-modal-actions .recycle-btn {
   background: rgba(68, 199, 255, 0.14);
-}
-
-.card-modal-actions .crystalize-btn {
-  background: rgba(255, 210, 80, 0.15);
-}
-
-.card-modal-actions .crystal-status {
-  color: #ffe066;
-  font-weight: bold;
-  padding: 10px 12px;
-  background: rgba(255,224,102,0.1);
-  border-radius: 12px;
 }
 
 .crystal-card {
