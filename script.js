@@ -856,13 +856,19 @@ function getRandomCard(forcedMinRarity = null) {
   } else {
     rarity = getRandomRarity();
   }
-
-  let pool = getBoosterPool().filter(c => c.rarity === rarity);
-  if (pool.length === 0) {
-    pool = getBoosterPool().filter(c => c.rarity >= (forcedMinRarity || 1));
+  // Prefer cards from the currently selected extension. If no card of that rarity
+  // exists in the extension pool, pick any card from the extension pool (any rarity).
+  // Only if the extension pool is completely empty, fallback to the global pool.
+  let extensionPool = getBoosterPool();
+  let pool = extensionPool.filter(c => c.rarity === rarity);
+  if (pool.length === 0 && extensionPool.length > 0) {
+    pool = extensionPool.slice(); // take any card from the extension
   }
-  if (pool.length === 0) pool = cardsDB.filter(c => c.rarity === rarity);
-  if (pool.length === 0) pool = cardsDB.filter(c => c.rarity >= (forcedMinRarity || 1));
+  if (pool.length === 0) {
+    // final fallback to global DB
+    pool = cardsDB.filter(c => c.rarity === rarity);
+    if (pool.length === 0) pool = cardsDB.slice();
+  }
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -1469,8 +1475,8 @@ function renderCollection() {
   progressBlock.style.cssText = "margin-bottom:16px;display:flex;flex-direction:column;gap:8px;padding:0 4px;";
 
   rarityConfig.forEach(cfg => {
-    let total = cardsDB.filter(c => c.rarity === cfg.rarity).length;
-    let owned = cardsDB.filter(c => c.rarity === cfg.rarity && collection[c.id]).length;
+    let total = extensionCards.filter(c => c.rarity === cfg.rarity).length;
+    let owned = extensionCards.filter(c => c.rarity === cfg.rarity && collection[c.id]).length;
     let pct = total > 0 ? Math.round((owned / total) * 100) : 0;
 
     let row = document.createElement("div");
@@ -1505,7 +1511,7 @@ function renderCollection() {
   sep.style.cssText = "border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0 0 12px 0;";
   container.appendChild(sep);
 
-  cardsDB.forEach(card => {
+  extensionCards.forEach(card => {
     let data = collection[card.id];
     let unlocked = data != null;
 
