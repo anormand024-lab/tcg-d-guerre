@@ -1385,9 +1385,36 @@ function uploadImage() {
 }
 
 // =====================================================
+// MIGRATION — Répare les données corrompues par l'ancien
+// système shiny qui supprimait collection[id] quand les
+// copies tombaient à 0. Pour chaque carte présente dans
+// shinyCollection, on garantit qu'une entrée existe dans
+// collection[] avec au minimum copies = 0, discovered = true.
+// Cette migration est idempotente : elle peut tourner
+// plusieurs fois sans effet de bord.
+// =====================================================
+
+function migrateShinyData() {
+  let migrated = false;
+  Object.keys(shinyCollection).forEach(idStr => {
+    let id = Number(idStr);
+    if (!collection[id]) {
+      // La carte avait été supprimée par l'ancien système — on la recrée
+      collection[id] = { discovered: true, copies: 0 };
+      migrated = true;
+    }
+  });
+  if (migrated) {
+    localStorage.setItem("collection", JSON.stringify(collection));
+    console.log("[Migration] Cartes shiny orphelines réparées dans collection[]");
+  }
+}
+
+// =====================================================
 // INIT
 // =====================================================
 
+migrateShinyData(); // ← doit tourner AVANT les renders
 renderCollection();
 renderShinyCollection();
 startCooldown();
