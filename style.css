@@ -478,7 +478,6 @@ body {
   box-shadow: 0 0 12px rgba(239,159,39,0.5);
 }
 
-/* FIX : rarity 6 passe au rouge */
 .rarity-6 {
   border: 3px solid #e02020;
   animation: cardAppear 0.35s ease forwards, rarityGlow 1.5s ease-in-out 0.35s infinite;
@@ -493,7 +492,6 @@ body {
   }
 }
 
-/* FIX : rarity 6 dans le swipe booster */
 #swipeContainer .rarity-6,
 #flipWrapper.rarity-6 {
   border: 3px solid #e02020;
@@ -1033,7 +1031,6 @@ body {
   pointer-events: none;
 }
 
-/* FIX : rarity 6 en rouge dans l'overlay */
 .drop-card-img-el.rarity-4 { border: 2px solid #7F77DD; box-shadow: 0 0 20px rgba(127,119,221,0.7); }
 .drop-card-img-el.rarity-5 { border: 2px solid #EF9F27; box-shadow: 0 0 25px rgba(239,159,39,0.8); }
 .drop-card-img-el.rarity-6 { border: 3px solid #e02020; box-shadow: 0 0 30px rgba(224,32,32,0.9), 0 0 60px rgba(224,32,32,0.4); }
@@ -1127,7 +1124,6 @@ body {
   position: relative;
 }
 
-/* FIX : rarity 6 en rouge dans le modal */
 .card-modal-img-wrap.rarity-6 {
   border: 3px solid #e02020;
   animation: rarityGlow 1.5s ease-in-out infinite;
@@ -1362,6 +1358,39 @@ body {
 .card-modal-img-wrap.shiny-card {
   border-color: #ffe066 !important;
   animation: shinyCardPulse 2s ease-in-out infinite !important;
+}
+
+/* ===================================================== */
+/* BUG FIX — Placeholder carte sans image (copies = 0)  */
+/* Garantit une hauteur visible pour les cartes shiny    */
+/* dont toutes les copies ont été consommées et qui      */
+/* n'ont pas d'URL image définie dans cardsDB.           */
+/* ===================================================== */
+
+.card-no-img-placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  opacity: 0.25;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+}
+
+/* Quand la carte est shiny, le placeholder brille */
+.shiny-card .card-no-img-placeholder {
+  opacity: 0.45;
+  background: rgba(255, 224, 102, 0.06);
+  box-shadow: inset 0 0 12px rgba(255, 224, 102, 0.1);
+}
+
+/* Sécurité : min-height sur toutes les cartes débloquées */
+.card:not(.card-locked) {
+  min-height: 80px;
 }
 
 /* ===================================================== */

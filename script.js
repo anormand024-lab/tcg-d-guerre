@@ -174,15 +174,6 @@ function saveShinyCollection() {
   localStorage.setItem("shinyCollection", JSON.stringify(shinyCollection));
 }
 
-// =====================================================
-// BUG FIX : craftShiny
-// Avant : si copies tombait à 0, la carte disparaissait
-//         de renderCollection() car la condition d'affichage
-//         nécessitait copies > 0.
-// Après : on garantit que collection[card.id] existe toujours
-//         avec copies >= 0, ce qui permet à renderCollection()
-//         d'afficher la carte grâce au flag isShiny.
-// =====================================================
 function craftShiny(cardId) {
   let card = cardsDB.find(c => c.id === cardId);
   if (!card) return;
@@ -205,12 +196,8 @@ function craftShiny(cardId) {
   );
   if (!confirmed) return;
 
-  // On soustrait le coût — jamais en dessous de 0
   data.copies = Math.max(0, data.copies - cost);
 
-  // IMPORTANT : on NE supprime JAMAIS collection[card.id]
-  // La carte reste dans la collection avec copies = 0,
-  // ce qui permet à renderCollection() de l'afficher via isShiny.
   localStorage.setItem("collection", JSON.stringify(collection));
 
   shinyCollection[cardId] = true;
@@ -1049,7 +1036,6 @@ function openCardModal(card) {
   modal.querySelector("#cardModalRarityLabel").innerText = rarityLabels[card.rarity] || "";
   modal.querySelector("#cardModalRarityLabel").style.color = rarityColors[card.rarity] || "white";
 
-  // Affiche x0 si copies = 0 mais shiny actif, sinon le vrai compte
   let copiesText = "";
   if (data && data.copies > 0) {
     copiesText = "x" + data.copies + " exemplaire" + (data.copies > 1 ? "s" : "");
@@ -1077,10 +1063,6 @@ function closeCardModal() {
 
 // =====================================================
 // COLLECTION RENDER
-// BUG FIX : une carte doit s'afficher dès qu'elle est
-// dans collection[] OU dans shinyCollection[], même si
-// copies === 0. La condition d'affichage est maintenant :
-//   unlocked = data != null || isShiny
 // =====================================================
 function renderCollection() {
   let container = document.getElementById("collectionList");
@@ -1173,15 +1155,6 @@ function renderCollection() {
   cardsDB.forEach(card => {
     let data = collection[card.id];
     let isShiny = shinyCollection[card.id];
-
-    // ─── BUG FIX ───────────────────────────────────────────
-    // Une carte est débloquée si :
-    //   • elle a une entrée dans collection[] (même copies = 0)
-    //   • OU elle a une version shiny craftée
-    // Avant ce fix, une carte avec copies = 0 ET sans shiny
-    // pouvait passer ici avec data défini mais copies = 0,
-    // et le bloc "else" ne la rendait pas correctement.
-    // ──────────────────────────────────────────────────────
     let unlocked = (data != null) || isShiny;
 
     let el = document.createElement("div");
@@ -1212,23 +1185,19 @@ function renderCollection() {
       let text = document.createElement("p"); text.innerHTML = "<b>" + card.name + "</b>";
       let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
 
-      // Copies disponibles (peut être 0 si tout a été consommé pour le shiny)
       let copies = data ? data.copies : 0;
       let cost = SHINY_COST[card.rarity];
 
       if (copies > 0) {
-        // On a des copies en stock
         let copiesEl = document.createElement("p"); copiesEl.innerText = "x" + copies;
 
         if (!isShiny && copies >= cost) {
-          // Peut crafter le shiny
           let craftBtn = document.createElement("button");
           craftBtn.className = "craft-shiny-btn";
           craftBtn.innerText = "✨ Shiny (" + cost + ")";
           craftBtn.addEventListener("click", (e) => { e.stopPropagation(); craftShiny(card.id); });
           el.appendChild(text); el.appendChild(rarity); el.appendChild(copiesEl); el.appendChild(craftBtn);
         } else {
-          // Pas assez pour crafter
           el.appendChild(text); el.appendChild(rarity); el.appendChild(copiesEl);
           if (!isShiny) {
             let prog = document.createElement("div");
@@ -1242,16 +1211,27 @@ function renderCollection() {
           }
         }
       } else {
-        // copies = 0 : carte entièrement consommée pour le shiny (ou jamais eu de doublon shiny)
+        // =====================================================
+        // BUG FIX : copies = 0 après craft shiny
+        // Si la carte n'a pas d'image, on ajoute un placeholder
+        // visible pour que la carte ait une hauteur et ne soit
+        // pas invisible dans la grille de collection.
+        // =====================================================
+        if (!imgSrc) {
+          let placeholder = document.createElement("div");
+          placeholder.className = "card-no-img-placeholder";
+          placeholder.innerText = "🂠";
+          el.appendChild(placeholder);
+        }
+
         el.appendChild(text); el.appendChild(rarity);
+
         if (isShiny) {
-          // Affiche le badge SHINY MAX — la carte est visible grâce à shinyCollection
           let maxLabel = document.createElement("p");
           maxLabel.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
           maxLabel.innerText = "✦ SHINY";
           el.appendChild(maxLabel);
         } else {
-          // Cas rare : copies = 0 sans shiny (ne devrait pas arriver en pratique)
           let zeroLabel = document.createElement("p");
           zeroLabel.style.cssText = "color:rgba(255,255,255,0.3);font-size:10px;";
           zeroLabel.innerText = "x0";
@@ -1300,6 +1280,12 @@ function renderShinyCollection() {
     let imgSrc = getCardImage(card);
     if (imgSrc) {
       let img = document.createElement("img"); img.src = imgSrc; el.appendChild(img);
+    } else {
+      // BUG FIX : placeholder visible dans l'onglet Shinys aussi
+      let placeholder = document.createElement("div");
+      placeholder.className = "card-no-img-placeholder";
+      placeholder.innerText = "🂠";
+      el.appendChild(placeholder);
     }
 
     let shinyBadge = document.createElement("div");
@@ -1385,13 +1371,7 @@ function uploadImage() {
 }
 
 // =====================================================
-// MIGRATION — Répare les données corrompues par l'ancien
-// système shiny qui supprimait collection[id] quand les
-// copies tombaient à 0. Pour chaque carte présente dans
-// shinyCollection, on garantit qu'une entrée existe dans
-// collection[] avec au minimum copies = 0, discovered = true.
-// Cette migration est idempotente : elle peut tourner
-// plusieurs fois sans effet de bord.
+// MIGRATION
 // =====================================================
 
 function migrateShinyData() {
@@ -1399,7 +1379,6 @@ function migrateShinyData() {
   Object.keys(shinyCollection).forEach(idStr => {
     let id = Number(idStr);
     if (!collection[id]) {
-      // La carte avait été supprimée par l'ancien système — on la recrée
       collection[id] = { discovered: true, copies: 0 };
       migrated = true;
     }
@@ -1414,7 +1393,7 @@ function migrateShinyData() {
 // INIT
 // =====================================================
 
-migrateShinyData(); // ← doit tourner AVANT les renders
+migrateShinyData();
 renderCollection();
 renderShinyCollection();
 startCooldown();
