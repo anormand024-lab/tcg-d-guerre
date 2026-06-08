@@ -139,8 +139,15 @@ let cardsDB = [
   { id: 120, name: "Le Diable", rarity: 1, url: "" },
   { id: 121, name: "les chaussueres a mois", rarity: 2, url: "" },
   { id: 122, name: "Swan &", rarity: 1, url: "" },
-  { id: 123, name: "Negro", rarity: 6, url: "" }
+  { id: 123, name: "Negro", rarity: 6, url: "" },
+  { id: 124, name: "Test Ext 2 - Alpha", rarity: 1, extension: "expansion2", url: "" },
+  { id: 125, name: "Test Ext 2 - Beta", rarity: 2, extension: "expansion2", url: "" },
+  { id: 126, name: "Test Ext 2 - Gamma", rarity: 3, extension: "expansion2", url: "" },
+  { id: 127, name: "Test Ext 2 - Delta", rarity: 4, extension: "expansion2", url: "" },
+  { id: 128, name: "Test Ext 2 - Epsilon", rarity: 5, extension: "expansion2", url: "" }
 ];
+
+cardsDB = cardsDB.map(card => ({ extension: card.extension || "base", ...card }));
 
 // =====================================================
 // DROP SYSTEM
@@ -165,12 +172,14 @@ let crystals = Number(localStorage.getItem("crystals")) || 0;
 let pieces = Number(localStorage.getItem("pieces")) || 0;
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 let currentExtension = localStorage.getItem("currentExtension") || "base";
+let collectionExtensionView = localStorage.getItem("collectionExtensionView") || "base";
 let dailyQuestState = loadDailyQuestState();
 
 const CRYSTAL_YIELD = { 1: 6, 2: 12, 3: 24, 4: 50, 5: 90, 6: 160, 7: 260 };
 const BOOSTER_CRYSTAL_COST = 140;
 const GOLDEN_BOOSTER_CRYSTAL_COST = 1200;
 const PIECE_BOOSTER_COST = 25;
+const GOLDEN_FREE_BOOSTER_CHANCE = 0.001;
 const SHOP_CARD_COST = { 1: 180, 2: 420, 3: 840, 4: 1560, 5: 2880, 6: 5280, 7: 9600 };
 
 const EXTENSIONS = [
@@ -286,6 +295,26 @@ function updateExtensionUi() {
   document.body.style.background = getExtensionData(currentExtension).bg;
 }
 
+function setCollectionExtensionView(id) {
+  collectionExtensionView = id;
+  localStorage.setItem("collectionExtensionView", collectionExtensionView);
+  renderCollection();
+}
+
+function renderCollectionExtensionSelector() {
+  let container = document.getElementById("collectionExtensionSelector");
+  if (!container) return;
+  container.innerHTML = "";
+  EXTENSIONS.forEach(ext => {
+    let btn = document.createElement("button");
+    btn.className = "collection-extension-button" + (collectionExtensionView === ext.id ? " active" : "");
+    btn.innerText = ext.label;
+    btn.title = ext.description;
+    btn.addEventListener("click", () => setCollectionExtensionView(ext.id));
+    container.appendChild(btn);
+  });
+}
+
 function getBoosterPool() {
   let pool = cardsDB.filter(card => (card.extension || "base") === currentExtension);
   if (pool.length === 0) pool = cardsDB;
@@ -331,16 +360,15 @@ function recycleDuplicates(cardId) {
 
 
 
-function openBoosterAnimation(type) {
+function openBoosterAnimation(type, isFree = false) {
   let cost = type === "golden" ? GOLDEN_BOOSTER_CRYSTAL_COST : BOOSTER_CRYSTAL_COST;
   
-  if (crystals < cost) {
+  if (!isFree && crystals < cost) {
     alert("Pas assez de cristaux ! Il t'en faut " + cost);
     return;
   }
 
-  // Deduct crystals first
-  if (!spendCrystals(cost)) {
+  if (!isFree && !spendCrystals(cost)) {
     alert("Erreur lors du paiement.");
     return;
   }
@@ -860,6 +888,11 @@ function openBooster() {
   pityCounter++;
   savePity();
 
+  let boosterType = "regular";
+  if (Math.random() < GOLDEN_FREE_BOOSTER_CHANCE) {
+    boosterType = "golden";
+  }
+
   let pack;
   if (pityCounter >= PITY_THRESHOLD) {
     pack = generatePackWithPity(6);
@@ -867,8 +900,15 @@ function openBooster() {
     savePity();
     showPityBanner();
   } else {
-    pack = generatePack(6);
-    if (pack.some(c => c.rarity >= 6)) { pityCounter = 0; savePity(); }
+    if (boosterType === "golden") {
+      pack = generateGoldenPack(6);
+    } else {
+      pack = generatePack(6);
+    }
+    if (pack.some(c => c.rarity >= 6)) {
+      pityCounter = 0;
+      savePity();
+    }
   }
 
   updatePityDisplay();
@@ -1401,11 +1441,17 @@ function renderCollection() {
   let container = document.getElementById("collectionList");
   container.innerHTML = "";
 
-  let count = 0;
-  for (let c of cardsDB) { if (collection[c.id]) count++; }
+  renderCollectionExtensionSelector();
+
+  let extensionCards = cardsDB.filter(c => (c.extension || "base") === collectionExtensionView);
+  if (extensionCards.length === 0) {
+    extensionCards = cardsDB.filter(c => (c.extension || "base") === "base");
+    collectionExtensionView = "base";
+  }
+  let count = extensionCards.filter(c => collection[c.id]).length;
 
   let header = document.createElement("div");
-  header.innerText = "📚 Collection : " + count + "/" + cardsDB.length;
+  header.innerText = "📚 Collection " + (collectionExtensionView === "base" ? "Base" : "Extension 2") + " : " + count + "/" + extensionCards.length;
   header.style.cssText = "text-align:center;font-size:18px;font-weight:bold;margin-bottom:12px;";
   container.appendChild(header);
 

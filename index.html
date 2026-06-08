@@ -31,6 +31,17 @@
             <div class="extension-info">Extension active :</div>
             <div id="extensionSelector" class="extension-selector"></div>
           </div>
+          <div class="drop-rate-panel">
+            <div class="drop-rate-title">Taux de drop</div>
+            <div class="drop-rate-row">⭐ 1 : 44.9%</div>
+            <div class="drop-rate-row">⭐⭐ 2 : 25%</div>
+            <div class="drop-rate-row">⭐⭐⭐ 3 : 15%</div>
+            <div class="drop-rate-row">⭐⭐⭐⭐ 4 : 10%</div>
+            <div class="drop-rate-row">⭐⭐⭐⭐⭐ 5 : 4%</div>
+            <div class="drop-rate-row">⭐⭐⭐⭐⭐⭐ 6 : 1%</div>
+            <div class="drop-rate-row">💎 7 : 0.1%</div>
+            <div class="drop-rate-note">Chance d'obtenir un booster gold gratuit : 1 / 1000</div>
+          </div>
           <button id="openBoosterBtn" class="primary-btn" onclick="openBooster()">
             Ouvrir un pack (6 cartes)
           </button>
@@ -42,6 +53,7 @@
       <section id="collection" class="tab">
         <div class="panel">
           <h2>Collection</h2>
+          <div class="collection-extension-row" id="collectionExtensionSelector"></div>
           <div id="collectionList" class="cards-grid"></div>
         </div>
       </section>
