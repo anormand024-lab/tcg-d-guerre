@@ -10,7 +10,10 @@
     <header class="topbar">
       <div class="topbar-left">
         <h1>TCG Pocket</h1>
-        <div id="crystalDisplay" class="resource-display">💎 0 cristaux</div>
+        <div class="currency-row">
+          <div id="crystalDisplay" class="resource-display">💎 0 cristaux</div>
+          <div id="pieceDisplay" class="resource-display">🪙 0 pièces</div>
+        </div>
       </div>
       <button id="musicToggleBtn" onclick="toggleMusic()">🔇 Musique OFF</button>
     </header>
@@ -24,6 +27,10 @@
       <section id="booster" class="tab active">
         <div class="panel">
           <h2>Ouvrir un booster</h2>
+          <div class="extension-panel">
+            <div class="extension-info">Extension active :</div>
+            <div id="extensionSelector" class="extension-selector"></div>
+          </div>
           <button id="openBoosterBtn" class="primary-btn" onclick="openBooster()">
             Ouvrir un pack (6 cartes)
           </button>

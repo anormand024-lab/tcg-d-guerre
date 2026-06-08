@@ -37,11 +37,11 @@ let cardsDB = [
   { id: 30, name: "Cartman",    rarity: 1, url: "https://i.postimg.cc/3RMKBCHR/Sans-titre-467-20260604113623.png" },
 
   // ==================== RARETÉ 2 ====================
-  { id: 31, name: "L'école des blancs",       rarity: 4, url: "https://i.postimg.cc/Y9ZRs0CP/IMG-3025.webp" },
-  { id: 32, name: "Gros Dormeur",       rarity: 2, url: "https://i.postimg.cc/1tcZrkHL/Design-sans-titre-1.png" },
-  { id: 33, name: "Les diplomés",    rarity: 6, url: "https://i.postimg.cc/sXzkxnrG/Design-sans-titre-3.png" },
-  { id: 34, name: "Algator",    rarity: 2, url: "https://i.postimg.cc/ncWW4LfL/IMG-20260606-205839.jpg" },
-  { id: 35, name: "Date Fougeux",    rarity: 2, url: "https://i.postimg.cc/Pxd7TPWM/IMG-5456.png" },
+  { id: 31, name: "L'école des blancs",       rarity: 4, extension: "expansion2", url: "https://i.postimg.cc/Y9ZRs0CP/IMG-3025.webp" },
+  { id: 32, name: "Gros Dormeur",       rarity: 2, extension: "expansion2", url: "https://i.postimg.cc/1tcZrkHL/Design-sans-titre-1.png" },
+  { id: 33, name: "Les diplomés",    rarity: 6, extension: "expansion2", url: "https://i.postimg.cc/sXzkxnrG/Design-sans-titre-3.png" },
+  { id: 34, name: "Algator",    rarity: 2, extension: "expansion2", url: "https://i.postimg.cc/ncWW4LfL/IMG-20260606-205839.jpg" },
+  { id: 35, name: "Date Fougeux",    rarity: 2, extension: "expansion2", url: "https://i.postimg.cc/Pxd7TPWM/IMG-5456.png" },
   { id: 36, name: "Ben",    rarity: 2, url: "https://i.postimg.cc/nh80nXZ1/IMG-5529.jpg" },
   { id: 37, name: "Manetti",    rarity: 2, url: "https://i.postimg.cc/GpBsSQTc/IMG-5533.jpg" },
   { id: 38, name: "Le H c'est le S",    rarity: 2, url: "https://i.postimg.cc/gJBDsVHn/IMG-20260608-001225-181.jpg" },
@@ -54,11 +54,11 @@ let cardsDB = [
   { id: 45, name: "Expulsion du territoire",    rarity: 2, url: "https://i.postimg.cc/2yZKB9Nf/IMG-20260608-004012-429.jpg" },
 
   // ==================== RARETÉ 3 ====================
-  { id: 46, name: "Gros Pannards",     rarity: 3, url: "https://i.postimg.cc/76Nc0Mwc/IMG-20260606-205848.jpg" },
-  { id: 47, name: "Controlleur",     rarity: 3, url: "https://i.postimg.cc/qMk47vLh/IMG-7141.jpg" },
-  { id: 48, name: "Isaac possede",    rarity: 3, url: "" },
-  { id: 49, name: "Valentin B le retour",    rarity: 3, url: "https://i.postimg.cc/nh66Jhdf/IMG-20260606-210331.jpg" },
-  { id: 50, name: "Éric Z",    rarity: 3, url: "https://i.postimg.cc/Cxxv5WXJ/IMG-5538.jpg" },
+  { id: 46, name: "Gros Pannards",     rarity: 3, extension: "expansion2", url: "https://i.postimg.cc/76Nc0Mwc/IMG-20260606-205848.jpg" },
+  { id: 47, name: "Controlleur",     rarity: 3, extension: "expansion2", url: "https://i.postimg.cc/qMk47vLh/IMG-7141.jpg" },
+  { id: 48, name: "Isaac possede",    rarity: 3, extension: "expansion2", url: "" },
+  { id: 49, name: "Valentin B le retour",    rarity: 3, extension: "expansion2", url: "https://i.postimg.cc/nh66Jhdf/IMG-20260606-210331.jpg" },
+  { id: 50, name: "Éric Z",    rarity: 3, extension: "expansion2", url: "https://i.postimg.cc/Cxxv5WXJ/IMG-5538.jpg" },
   { id: 51, name: "Ophenya juive",    rarity: 3, url: "" },
   { id: 52, name: "Manu",    rarity: 3, url: "" },
   { id: 53, name: "Famille Thuram",    rarity: 3, url: "https://i.postimg.cc/dV7zpyjr/IMG-20260606-205842.jpg" },
@@ -162,21 +162,134 @@ let dropRates = [
 
 let collection = JSON.parse(localStorage.getItem("collection")) || {};
 let crystals = Number(localStorage.getItem("crystals")) || 0;
+let pieces = Number(localStorage.getItem("pieces")) || 0;
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
+let currentExtension = localStorage.getItem("currentExtension") || "base";
+let dailyQuestState = loadDailyQuestState();
 
 const CRYSTAL_YIELD = { 1: 6, 2: 12, 3: 24, 4: 50, 5: 90, 6: 160, 7: 260 };
 const BOOSTER_CRYSTAL_COST = 140;
 const GOLDEN_BOOSTER_CRYSTAL_COST = 1200;
+const PIECE_BOOSTER_COST = 25;
 const SHOP_CARD_COST = { 1: 180, 2: 420, 3: 840, 4: 1560, 5: 2880, 6: 5280, 7: 9600 };
+
+const EXTENSIONS = [
+  { id: "base", label: "Base", description: "Extension de base", bg: "linear-gradient(135deg, rgba(15,16,30,0.95) 0%, rgba(26,31,60,0.95) 100%)" },
+  { id: "expansion2", label: "Extension 2", description: "Deuxième extension prête à l'emploi", bg: "linear-gradient(135deg, rgba(15,40,70,0.95) 0%, rgba(10,15,40,0.95) 100%)" }
+];
+
+const DAILY_QUESTS = [
+  { id: "open_booster", title: "Ouvre un booster", description: "Ouvre un booster aujourd'hui", target: 1, reward: 20, tracker: "boostersOpenedToday" },
+  { id: "recycle_duplicate", title: "Recycle un doublon", description: "Recycle un doublon aujourd'hui", target: 1, reward: 15, tracker: "duplicatesRecycledToday" },
+  { id: "find_rare", title: "Trouve une carte rare", description: "Obtiens une carte rare ou mieux aujourd'hui", target: 1, reward: 25, tracker: "rareCardsFoundToday" }
+];
 
 function saveCrystals() {
   localStorage.setItem("crystals", crystals);
 }
 
+function savePieces() {
+  localStorage.setItem("pieces", pieces);
+}
+
 function updateCrystalDisplay() {
   let el = document.getElementById("crystalDisplay");
+  let pieceEl = document.getElementById("pieceDisplay");
   if (!el) return;
   el.innerText = "💎 " + crystals + " cristal" + (crystals > 1 ? "s" : "");
+  if (pieceEl) pieceEl.innerText = "🪙 " + pieces + " pièce" + (pieces > 1 ? "s" : "");
+}
+
+function addPieces(amount) {
+  pieces = Math.max(0, pieces + amount);
+  savePieces();
+  updateCrystalDisplay();
+}
+
+function spendPieces(amount) {
+  if (amount > pieces) return false;
+  pieces -= amount;
+  savePieces();
+  updateCrystalDisplay();
+  return true;
+}
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadDailyQuestState() {
+  let stored = JSON.parse(localStorage.getItem("dailyQuestState")) || {};
+  if (stored.date !== getTodayKey()) {
+    return {
+      date: getTodayKey(),
+      trackers: {
+        boostersOpenedToday: 0,
+        duplicatesRecycledToday: 0,
+        rareCardsFoundToday: 0
+      },
+      claimed: {}
+    };
+  }
+  stored.trackers = stored.trackers || { boostersOpenedToday: 0, duplicatesRecycledToday: 0, rareCardsFoundToday: 0 };
+  stored.claimed = stored.claimed || {};
+  return stored;
+}
+
+function saveDailyQuestState() {
+  localStorage.setItem("dailyQuestState", JSON.stringify(dailyQuestState));
+}
+
+function resetDailyQuestState() {
+  dailyQuestState = {
+    date: getTodayKey(),
+    trackers: {
+      boostersOpenedToday: 0,
+      duplicatesRecycledToday: 0,
+      rareCardsFoundToday: 0
+    },
+    claimed: {}
+  };
+  saveDailyQuestState();
+}
+
+function incrementQuestTracker(key, amount = 1) {
+  if (!dailyQuestState.trackers[key]) dailyQuestState.trackers[key] = 0;
+  dailyQuestState.trackers[key] = Math.max(0, dailyQuestState.trackers[key] + amount);
+  saveDailyQuestState();
+}
+
+function getExtensionData(id) {
+  return EXTENSIONS.find(ext => ext.id === id) || EXTENSIONS[0];
+}
+
+function setExtension(id) {
+  let extension = getExtensionData(id);
+  currentExtension = extension.id;
+  localStorage.setItem("currentExtension", currentExtension);
+  document.body.dataset.extension = currentExtension;
+  updateExtensionUi();
+}
+
+function updateExtensionUi() {
+  let container = document.getElementById("extensionSelector");
+  if (!container) return;
+  container.innerHTML = "";
+  EXTENSIONS.forEach(ext => {
+    let btn = document.createElement("button");
+    btn.className = "extension-button" + (currentExtension === ext.id ? " active" : "");
+    btn.innerText = ext.label;
+    btn.title = ext.description;
+    btn.addEventListener("click", () => setExtension(ext.id));
+    container.appendChild(btn);
+  });
+  document.body.style.background = getExtensionData(currentExtension).bg;
+}
+
+function getBoosterPool() {
+  let pool = cardsDB.filter(card => (card.extension || "base") === currentExtension);
+  if (pool.length === 0) pool = cardsDB;
+  return pool;
 }
 
 function addCrystals(amount) {
@@ -210,7 +323,9 @@ function recycleDuplicates(cardId) {
   data.copies = 1;
   localStorage.setItem("collection", JSON.stringify(collection));
   addCrystals(reward);
+  incrementQuestTracker("duplicatesRecycledToday", 1);
   renderCollection();
+  renderShop();
   alert("✅ Tu as recyclé " + duplicates + " doublon" + (duplicates > 1 ? "s" : "") + " pour " + reward + " cristaux.");
 }
 
@@ -321,6 +436,96 @@ function buyCardFromShop(cardId) {
   renderCollection();
   renderShop();
   alert("✅ Carte achetée : " + card.name + " !");
+}
+
+function openBoosterWithPieces() {
+  if (!spendPieces(PIECE_BOOSTER_COST)) {
+    alert("Pas assez de pièces ! Obtiens-en via les quêtes quotidiennes.");
+    return;
+  }
+  let pack = generatePack(6);
+  if (pack.some(c => c.rarity >= 6)) {
+    pityCounter = 0;
+    savePity();
+    showPityBanner();
+  } else {
+    pityCounter++;
+    savePity();
+  }
+  saveCollection(pack);
+  showTab("booster");
+  updatePityDisplay();
+  renderBooster(pack);
+  renderCollection();
+  renderShop();
+  incrementQuestTracker("boostersOpenedToday", 1);
+  if (pack.some(c => c.rarity >= 3)) incrementQuestTracker("rareCardsFoundToday", 1);
+  alert("✅ Booster ouvert avec des pièces !");
+}
+
+function claimQuest(questId) {
+  let quest = DAILY_QUESTS.find(q => q.id === questId);
+  if (!quest) return;
+  if (dailyQuestState.claimed[questId]) {
+    alert("Tu as déjà réclamé cette quête.");
+    return;
+  }
+  let progress = dailyQuestState.trackers[quest.tracker] || 0;
+  if (progress < quest.target) {
+    alert("Objectif non atteint : " + quest.description);
+    return;
+  }
+  dailyQuestState.claimed[questId] = true;
+  saveDailyQuestState();
+  addPieces(quest.reward);
+  renderQuestPanel();
+  alert("✅ Quête réclamée : " + quest.reward + " pièces.");
+}
+
+function renderQuestPanel() {
+  let container = document.getElementById("dailyQuestsContainer");
+  if (!container) return;
+  container.innerHTML = "";
+  DAILY_QUESTS.forEach(quest => {
+    let progress = dailyQuestState.trackers[quest.tracker] || 0;
+    let complete = progress >= quest.target;
+    let claimed = dailyQuestState.claimed[quest.id];
+
+    let card = document.createElement("div");
+    card.className = "quest-card" + (claimed ? " claimed" : "") + (complete ? " complete" : "");
+
+    let title = document.createElement("div");
+    title.className = "quest-title";
+    title.innerText = quest.title;
+
+    let description = document.createElement("div");
+    description.className = "quest-desc";
+    description.innerText = quest.description;
+
+    let progressBar = document.createElement("div");
+    progressBar.className = "quest-progress-bar";
+    let progressFill = document.createElement("div");
+    progressFill.className = "quest-progress-fill";
+    progressFill.style.width = Math.min(100, Math.round((progress / quest.target) * 100)) + "%";
+    progressBar.appendChild(progressFill);
+
+    let statusRow = document.createElement("div");
+    statusRow.className = "quest-status-row";
+    statusRow.innerHTML = "<span>" + progress + " / " + quest.target + "</span><span>+" + quest.reward + " pièces</span>";
+
+    let claimBtn = document.createElement("button");
+    claimBtn.className = "claim-btn";
+    claimBtn.disabled = !complete || claimed;
+    claimBtn.innerText = claimed ? "Réclamé" : (complete ? "Réclamer" : "En cours");
+    claimBtn.addEventListener("click", () => claimQuest(quest.id));
+
+    card.appendChild(title);
+    card.appendChild(description);
+    card.appendChild(progressBar);
+    card.appendChild(statusRow);
+    card.appendChild(claimBtn);
+    container.appendChild(card);
+  });
 }
 
 // =====================================================
@@ -623,8 +828,13 @@ function getRandomCard(forcedMinRarity = null) {
   } else {
     rarity = getRandomRarity();
   }
-  let pool = cardsDB.filter(c => c.rarity === rarity);
-  if (pool.length === 0) pool = cardsDB.filter(c => c.rarity >= forcedMinRarity);
+
+  let pool = getBoosterPool().filter(c => c.rarity === rarity);
+  if (pool.length === 0) {
+    pool = getBoosterPool().filter(c => c.rarity >= (forcedMinRarity || 1));
+  }
+  if (pool.length === 0) pool = cardsDB.filter(c => c.rarity === rarity);
+  if (pool.length === 0) pool = cardsDB.filter(c => c.rarity >= (forcedMinRarity || 1));
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -665,6 +875,9 @@ function openBooster() {
   saveCollection(pack);
   renderBooster(pack);
   renderCollection();
+  incrementQuestTracker("boostersOpenedToday", 1);
+  if (pack.some(c => c.rarity >= 3)) incrementQuestTracker("rareCardsFoundToday", 1);
+  renderShop();
   startCooldown();
 }
 
@@ -1372,6 +1585,32 @@ function renderShop() {
 
   shopList.appendChild(boostersGrid);
 
+  let pieceSlot = document.createElement("div");
+  pieceSlot.className = "booster-slot pieces";
+  pieceSlot.innerHTML =
+    "<div class='booster-slot-inner'>" +
+    "<div class='booster-slot-icon'>🪙</div>" +
+    "<div class='booster-slot-name'>Booster Pièces</div>" +
+    "<div class='booster-slot-cost'>" + PIECE_BOOSTER_COST + " pièces</div>" +
+    "<div class='booster-slot-badge'>Utilise tes quêtes</div>" +
+    "</div>";
+  pieceSlot.addEventListener("click", () => openBoosterWithPieces());
+  shopList.appendChild(pieceSlot);
+
+  let questsTitle = document.createElement("h3");
+  questsTitle.className = "shop-section-title";
+  questsTitle.style.color = "rgba(255,255,255,0.85)";
+  questsTitle.style.marginTop = "30px";
+  questsTitle.innerText = "🎯 Quêtes quotidiennes";
+  shopList.appendChild(questsTitle);
+
+  let questsContainer = document.createElement("div");
+  questsContainer.id = "dailyQuestsContainer";
+  questsContainer.className = "quest-panel";
+  shopList.appendChild(questsContainer);
+
+  renderQuestPanel();
+
   let cardsTitle = document.createElement("h3");
   cardsTitle.className = "shop-section-title";
   cardsTitle.style.color = "rgba(255,255,255,0.8)";
@@ -1475,6 +1714,7 @@ function uploadImage() {
 renderCollection();
 renderShop();
 updateCrystalDisplay();
+setExtension(currentExtension);
 startCooldown();
 updateMusicBtn();
 updatePityDisplay();
