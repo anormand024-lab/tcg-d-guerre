@@ -166,8 +166,9 @@ let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 const CRYSTAL_YIELD = { 1: 6, 2: 12, 3: 24, 4: 50, 5: 90, 6: 160, 7: 260 };
 const BOOSTER_CRYSTAL_COST = 140;
-const CRYSTALLIZE_COST = { 1: 35, 2: 75, 3: 140, 4: 240, 5: 420, 6: 700, 7: 1200 };
-const SHOP_CARD_COST = { 1: 30, 2: 70, 3: 140, 4: 260, 5: 480, 6: 880, 7: 1600 };
+const GOLDEN_BOOSTER_CRYSTAL_COST = 1200;
+const CRYSTALLIZE_COST = { 1: 120, 2: 280, 3: 550, 4: 950, 5: 1680, 6: 2800, 7: 4800 };
+const SHOP_CARD_COST = { 1: 180, 2: 420, 3: 840, 4: 1560, 5: 2880, 6: 5280, 7: 9600 };
 
 function saveCrystals() {
   localStorage.setItem("crystals", crystals);
@@ -241,6 +242,80 @@ function crystalizeCard(cardId) {
   alert("✨ La carte \"" + card.name + "\" est maintenant cristallisée !");
 }
 
+function openBoosterAnimation(type) {
+  let cost = type === "golden" ? GOLDEN_BOOSTER_CRYSTAL_COST : BOOSTER_CRYSTAL_COST;
+  
+  if (crystals < cost) {
+    alert("Pas assez de cristaux ! Il t'en faut " + cost);
+    return;
+  }
+
+  // Create overlay
+  let overlay = document.createElement("div");
+  overlay.className = "booster-animation-overlay";
+  
+  let container = document.createElement("div");
+  container.className = "booster-animation-container";
+  
+  // Booster box
+  let box = document.createElement("div");
+  box.className = "booster-animation-box " + (type === "golden" ? "golden" : "regular");
+  box.innerHTML = type === "golden" ? "🌟" : "📦";
+  
+  // Particles
+  let particlesContainer = document.createElement("div");
+  particlesContainer.className = "particles-container";
+  
+  container.appendChild(box);
+  container.appendChild(particlesContainer);
+  overlay.appendChild(container);
+  document.body.appendChild(overlay);
+  
+  // Trigger animation
+  setTimeout(() => {
+    box.classList.add("open");
+    createParticles(particlesContainer, type === "golden" ? 20 : 15);
+  }, 100);
+  
+  // After animation, process the booster
+  setTimeout(() => {
+    if (type === "golden") {
+      buyGoldenBoosterWithCrystals();
+    } else {
+      buyBoosterWithCrystals();
+    }
+    overlay.remove();
+  }, 1500);
+}
+
+function createParticles(container, count) {
+  for (let i = 0; i < count; i++) {
+    let particle = document.createElement("div");
+    particle.className = "particle";
+    particle.innerHTML = ["✨", "💫", "⭐", "🌟"][Math.floor(Math.random() * 4)];
+    
+    let angle = (Math.PI * 2 * i) / count;
+    let velocity = 5 + Math.random() * 5;
+    let vx = Math.cos(angle) * velocity;
+    let vy = Math.sin(angle) * velocity;
+    
+    container.appendChild(particle);
+    
+    let frame = 0;
+    let animFrame = setInterval(() => {
+      frame++;
+      let x = vx * frame * 2;
+      let y = vy * frame * 2 - (frame * frame * 0.3);
+      let opacity = Math.max(0, 1 - frame / 30);
+      
+      particle.style.transform = `translate(${x}px, ${y}px)`;
+      particle.style.opacity = opacity;
+      
+      if (frame >= 30) clearInterval(animFrame);
+    }, 16);
+  }
+}
+
 function buyBoosterWithCrystals() {
   if (!spendCrystals(BOOSTER_CRYSTAL_COST)) {
     alert("Pas assez de cristaux pour acheter un booster.");
@@ -250,7 +325,17 @@ function buyBoosterWithCrystals() {
   saveCollection(pack);
   renderBooster(pack);
   renderCollection();
-  alert("🎁 Booster acheté avec des cristaux !");
+}
+
+function buyGoldenBoosterWithCrystals() {
+  if (!spendCrystals(GOLDEN_BOOSTER_CRYSTAL_COST)) {
+    alert("Pas assez de cristaux pour acheter un booster gold.");
+    return;
+  }
+  let pack = generateGoldenPack(6);
+  saveCollection(pack);
+  renderBooster(pack);
+  renderCollection();
 }
 
 function buyCardFromShop(cardId) {
@@ -620,6 +705,7 @@ function openBooster() {
 function generatePack(size) {
   let pack = [];
   for (let i = 0; i < size; i++) pack.push(getRandomCard());
+  sortPackByRarity(pack);
   return pack;
 }
 
@@ -627,8 +713,25 @@ function generatePackWithPity(size) {
   let pack = [];
   pack.push(getRandomCard(6));
   for (let i = 1; i < size; i++) pack.push(getRandomCard());
-  pack.sort(() => Math.random() - 0.5);
+  sortPackByRarity(pack);
   return pack;
+}
+
+function generateGoldenPack(size) {
+  let pack = [];
+  for (let i = 0; i < size; i++) {
+    if (i < 3) {
+      pack.push(getRandomCard(5));
+    } else {
+      pack.push(getRandomCard());
+    }
+  }
+  sortPackByRarity(pack);
+  return pack;
+}
+
+function sortPackByRarity(pack) {
+  pack.sort((a, b) => a.rarity - b.rarity);
 }
 
 function showPityBanner() {
@@ -1281,11 +1384,51 @@ function renderShop() {
     "<p>Plus la rareté est haute, plus le coût est élevé.</p>";
   shopInfo.appendChild(description);
 
-  let buyBoosterBtn = document.createElement("button");
-  buyBoosterBtn.className = "primary-btn";
-  buyBoosterBtn.innerText = "Acheter un booster (" + BOOSTER_CRYSTAL_COST + " cristaux)";
-  buyBoosterBtn.addEventListener("click", buyBoosterWithCrystals);
-  shopInfo.appendChild(buyBoosterBtn);
+  // Section Boosters
+  let boostersTitle = document.createElement("h3");
+  boostersTitle.className = "shop-section-title";
+  boostersTitle.style.color = "rgba(255,255,255,0.9)";
+  boostersTitle.style.textShadow = "none";
+  boostersTitle.innerText = "🎁 Boosters";
+  shopList.appendChild(boostersTitle);
+
+  let boostersGrid = document.createElement("div");
+  boostersGrid.className = "boosters-grid";
+
+  // Regular Booster Slot
+  let regularSlot = document.createElement("div");
+  regularSlot.className = "booster-slot";
+  regularSlot.innerHTML =
+    "<div class='booster-slot-inner'>" +
+    "<div class='booster-slot-icon'>📦</div>" +
+    "<div class='booster-slot-name'>Booster Standard</div>" +
+    "<div class='booster-slot-cost'>" + BOOSTER_CRYSTAL_COST + " 💎</div>" +
+    "</div>";
+  regularSlot.addEventListener("click", () => openBoosterAnimation("regular"));
+  boostersGrid.appendChild(regularSlot);
+
+  // Golden Booster Slot
+  let goldenSlot = document.createElement("div");
+  goldenSlot.className = "booster-slot golden";
+  goldenSlot.innerHTML =
+    "<div class='booster-slot-inner'>" +
+    "<div class='booster-slot-icon'>🌟</div>" +
+    "<div class='booster-slot-name'>Booster Gold</div>" +
+    "<div class='booster-slot-cost'>" + GOLDEN_BOOSTER_CRYSTAL_COST + " 💎</div>" +
+    "<div class='booster-slot-badge'>3+ Légendaires</div>" +
+    "</div>";
+  goldenSlot.addEventListener("click", () => openBoosterAnimation("golden"));
+  boostersGrid.appendChild(goldenSlot);
+
+  shopList.appendChild(boostersGrid);
+
+  let cardsTitle = document.createElement("h3");
+  cardsTitle.className = "shop-section-title";
+  cardsTitle.style.color = "rgba(255,255,255,0.8)";
+  cardsTitle.style.textShadow = "none";
+  cardsTitle.style.marginTop = "30px";
+  cardsTitle.innerText = "📚 Cartes manquantes";
+  shopList.appendChild(cardsTitle);
 
   let missingCards = cardsDB.filter(c => !collection[c.id]).sort((a, b) => a.rarity - b.rarity || a.name.localeCompare(b.name));
   if (missingCards.length === 0) {

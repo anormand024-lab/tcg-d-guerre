@@ -1124,6 +1124,13 @@ body {
   position: relative;
 }
 
+.card-modal-img-wrap.crystal-card {
+  background: linear-gradient(135deg, rgba(90, 205, 255, 0.15) 0%, rgba(130, 230, 255, 0.08) 100%);
+  border: 2px solid rgba(90, 205, 255, 0.6);
+  box-shadow: 0 0 40px rgba(90, 205, 255, 0.4), inset 0 0 20px rgba(90, 205, 255, 0.1);
+  animation: crystalCardGlow 2s ease-in-out infinite;
+}
+
 .card-modal-img-wrap.rarity-6 {
   border: 3px solid #e02020;
   animation: rarityGlow 1.5s ease-in-out infinite;
@@ -1452,8 +1459,10 @@ body {
 }
 
 .crystal-card {
-  border: 1px solid rgba(90, 205, 255, 0.35);
-  box-shadow: 0 0 24px rgba(90, 205, 255, 0.15);
+  border: 2px solid rgba(90, 205, 255, 0.6);
+  box-shadow: 0 0 40px rgba(90, 205, 255, 0.4), inset 0 0 20px rgba(90, 205, 255, 0.1);
+  background: linear-gradient(135deg, rgba(90, 205, 255, 0.08) 0%, rgba(130, 230, 255, 0.04) 100%) !important;
+  animation: crystalCardGlow 2s ease-in-out infinite;
 }
 
 .crystal-card::after {
@@ -1461,8 +1470,19 @@ body {
   position: absolute;
   top: 10px;
   right: 10px;
-  font-size: 20px;
-  color: #b8f5ff;
+  font-size: 24px;
+  color: #00ffff;
+  animation: crystalPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes crystalCardGlow {
+  0%, 100% { box-shadow: 0 0 40px rgba(90, 205, 255, 0.4), inset 0 0 20px rgba(90, 205, 255, 0.1); }
+  50% { box-shadow: 0 0 60px rgba(90, 205, 255, 0.6), inset 0 0 30px rgba(90, 205, 255, 0.2); }
+}
+
+@keyframes crystalPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
 }
 
 .crystal-badge {
@@ -1515,6 +1535,244 @@ body {
   border-radius: 16px;
 }
 
-/* ===================================================== */
-/* END FILE */
-/* ===================================================== */
+.shop-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.shop-section-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffd700;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.golden-booster-card {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.1) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+.golden-booster-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.golden-booster-btn {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.golden-booster-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+/* Boosters Grid */
+.boosters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+.booster-slot {
+  background: linear-gradient(135deg, rgba(100, 150, 255, 0.1) 0%, rgba(50, 100, 200, 0.05) 100%);
+  border: 3px solid rgba(100, 150, 255, 0.4);
+  border-radius: 20px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(100, 150, 255, 0.15), inset 0 0 15px rgba(100, 150, 255, 0.1);
+}
+
+.booster-slot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.booster-slot:hover {
+  transform: translateY(-8px) scale(1.05);
+  border-color: rgba(100, 200, 255, 0.8);
+  box-shadow: 0 0 40px rgba(100, 200, 255, 0.4), inset 0 0 25px rgba(100, 150, 255, 0.2);
+}
+
+.booster-slot:active {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.booster-slot.golden {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2), inset 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+.booster-slot.golden:hover {
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), inset 0 0 25px rgba(255, 215, 0, 0.2);
+}
+
+.booster-slot-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.booster-slot-icon {
+  font-size: 48px;
+  animation: boosterIconBounce 2s ease-in-out infinite;
+}
+
+.booster-slot.golden .booster-slot-icon {
+  animation: boosterIconBounceGolden 2s ease-in-out infinite;
+}
+
+.booster-slot-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.booster-slot-cost {
+  font-size: 13px;
+  font-weight: bold;
+  color: #64ff64;
+  text-shadow: 0 0 5px rgba(100, 255, 100, 0.4);
+}
+
+.booster-slot-badge {
+  font-size: 11px;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+@keyframes boosterIconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes boosterIconBounceGolden {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.1); }
+}
+
+/* Booster Opening Animation */
+.booster-animation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeInOverlay 0.3s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { background: rgba(0, 0, 0, 0); }
+  to { background: rgba(0, 0, 0, 0.8); }
+}
+
+.booster-animation-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booster-animation-box {
+  position: absolute;
+  width: 120px;
+  height: 140px;
+  background: linear-gradient(135deg, rgba(100, 150, 255, 0.3) 0%, rgba(50, 100, 200, 0.1) 100%);
+  border: 3px solid rgba(100, 150, 255, 0.6);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  box-shadow: 0 0 30px rgba(100, 150, 255, 0.4), 
+              0 20px 40px rgba(0, 0, 0, 0.5);
+  animation: boosterBoxPulse 0.6s ease;
+}
+
+.booster-animation-box.golden {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 165, 0, 0.1) 100%);
+  border-color: rgba(255, 215, 0, 0.7);
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.5), 
+              0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.booster-animation-box.open {
+  animation: boosterBoxOpen 1.2s ease forwards;
+}
+
+@keyframes boosterBoxPulse {
+  0% { transform: scale(0.5) rotateZ(-10deg); opacity: 0; }
+  50% { transform: scale(1.05) rotateZ(5deg); }
+  100% { transform: scale(1) rotateZ(0deg); opacity: 1; }
+}
+
+@keyframes boosterBoxOpen {
+  0% { transform: scale(1) rotateZ(0deg); }
+  30% { transform: scale(1.1) rotateZ(-5deg); }
+  50% { transform: scale(0.3) rotateZ(180deg); opacity: 1; }
+  100% { transform: scale(0) rotateZ(360deg); opacity: 0; }
+}
+
+.particles-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.particle {
+  position: absolute;
+  font-size: 24px;
+  pointer-events: none;
+  left: 50%;
+  top: 50%;
+  animation: particleFloat 0.3s ease-out;
+}
+
+@keyframes particleFloat {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
