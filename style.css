@@ -478,23 +478,25 @@ body {
   box-shadow: 0 0 12px rgba(239,159,39,0.5);
 }
 
+/* FIX : rarity 6 passe au rouge */
 .rarity-6 {
-  border: 3px solid gold;
+  border: 3px solid #e02020;
   animation: cardAppear 0.35s ease forwards, rarityGlow 1.5s ease-in-out 0.35s infinite;
 }
 
 @keyframes rarityGlow {
   0%, 100% {
-    box-shadow: 0 0 12px rgba(255,215,0,0.5), 0 0 20px rgba(255,215,0,0.3);
+    box-shadow: 0 0 12px rgba(224,32,32,0.5), 0 0 20px rgba(224,32,32,0.3);
   }
   50% {
-    box-shadow: 0 0 28px rgba(255,215,0,0.95), 0 0 50px rgba(255,215,0,0.5);
+    box-shadow: 0 0 28px rgba(224,32,32,0.95), 0 0 50px rgba(224,32,32,0.5);
   }
 }
 
+/* FIX : rarity 6 dans le swipe booster */
 #swipeContainer .rarity-6,
 #flipWrapper.rarity-6 {
-  border: 3px solid gold;
+  border: 3px solid #e02020;
   animation: rarityGlow 1.5s ease-in-out infinite;
 }
 
@@ -1031,9 +1033,10 @@ body {
   pointer-events: none;
 }
 
+/* FIX : rarity 6 en rouge dans l'overlay */
 .drop-card-img-el.rarity-4 { border: 2px solid #7F77DD; box-shadow: 0 0 20px rgba(127,119,221,0.7); }
 .drop-card-img-el.rarity-5 { border: 2px solid #EF9F27; box-shadow: 0 0 25px rgba(239,159,39,0.8); }
-.drop-card-img-el.rarity-6 { border: 3px solid gold; box-shadow: 0 0 30px rgba(255,215,0,0.9), 0 0 60px rgba(255,215,0,0.4); }
+.drop-card-img-el.rarity-6 { border: 3px solid #e02020; box-shadow: 0 0 30px rgba(224,32,32,0.9), 0 0 60px rgba(224,32,32,0.4); }
 .drop-card-img-el.rarity-7 { border: 3px solid #00cfff; box-shadow: 0 0 30px rgba(0,207,255,1), 0 0 80px rgba(0,150,255,0.5); }
 
 .drop-overlay-inner {
@@ -1124,8 +1127,9 @@ body {
   position: relative;
 }
 
+/* FIX : rarity 6 en rouge dans le modal */
 .card-modal-img-wrap.rarity-6 {
-  border: 3px solid gold;
+  border: 3px solid #e02020;
   animation: rarityGlow 1.5s ease-in-out infinite;
 }
 
@@ -1203,7 +1207,6 @@ body {
 /* SHINY SYSTEM                                          */
 /* ===================================================== */
 
-/* Effet visuel carte shiny */
 .shiny-card {
   position: relative;
   overflow: hidden;
@@ -1253,7 +1256,6 @@ body {
   }
 }
 
-/* Badge ✦ doré sur la carte */
 .shiny-badge {
   position: absolute;
   top: 5px;
@@ -1279,7 +1281,6 @@ body {
   50%       { filter: brightness(1.5) drop-shadow(0 0 10px gold); }
 }
 
-/* Bouton craft shiny */
 .craft-shiny-btn {
   display: block;
   width: 100%;
@@ -1302,7 +1303,6 @@ body {
 .craft-shiny-btn:hover  { filter: brightness(1.1); box-shadow: 0 4px 14px rgba(255,200,0,0.7); }
 .craft-shiny-btn:active { transform: scale(0.93); filter: brightness(1.2); }
 
-/* Barre de progression vers le craft */
 .craft-progress-bar {
   width: 100%;
   height: 4px;
@@ -1326,7 +1326,6 @@ body {
   margin-top: 1px;
 }
 
-/* Bannière craft shiny */
 .shiny-craft-banner {
   background: linear-gradient(135deg, #ffe066, #fff700, #ffb300);
   color: #2a1800;
@@ -1341,13 +1340,11 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Animation barre shiny dans les progressions */
 @keyframes shinyBarAnim {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-/* Badge shiny dans le modal */
 .shiny-modal-badge {
   display: inline-block;
   margin-top: 4px;
@@ -1362,7 +1359,6 @@ body {
   animation: shinyBadgePulse 2s ease-in-out infinite;
 }
 
-/* Image wrap shiny dans le modal */
 .card-modal-img-wrap.shiny-card {
   border-color: #ffe066 !important;
   animation: shinyCardPulse 2s ease-in-out infinite !important;

@@ -196,8 +196,11 @@ function craftShiny(cardId) {
   );
   if (!confirmed) return;
 
+  // FIX : on soustrait les copies mais on NE SUPPRIME JAMAIS l'entrée de la collection
+  // La carte reste visible même à 0 copie (grâce au shinyCollection)
   data.copies -= cost;
-  if (data.copies <= 0) delete collection[card.id];
+  if (data.copies < 0) data.copies = 0;
+  // On ne fait plus "delete collection[card.id]" — la carte reste dans la collection
   localStorage.setItem("collection", JSON.stringify(collection));
 
   shinyCollection[cardId] = true;
@@ -623,11 +626,12 @@ const dropAnimConfigs = {
     particleCount: 32, screenFlashColor: "rgba(239,159,39,0.6)",
     duration: 2200, shockwave: true, letterboxEffect: false,
   },
+  // FIX : rarity 6 passe au rouge
   6: {
-    label: "◈ SECRÈTE ◈", labelColor: "gold",
-    bgColor: "radial-gradient(circle, rgba(255,215,0,0.45) 0%, rgba(5,5,5,0.99) 65%)",
-    particleColors: ["gold", "#fff700", "#ff00ff", "#00ffff", "#ffffff"],
-    particleCount: 50, screenFlashColor: "rgba(255,215,0,0.8)",
+    label: "◈ SECRÈTE ◈", labelColor: "#e02020",
+    bgColor: "radial-gradient(circle, rgba(224,32,32,0.45) 0%, rgba(5,5,5,0.99) 65%)",
+    particleColors: ["#e02020", "#ff6060", "#ff0000", "#ff9090", "#ffffff"],
+    particleCount: 50, screenFlashColor: "rgba(224,32,32,0.8)",
     duration: 3000, shockwave: true, letterboxEffect: true,
   },
   7: {
@@ -1010,7 +1014,8 @@ function openCardModal(card) {
   }
 
   const rarityLabels = { 1: "Commune", 2: "Peu Commune", 3: "Rare", 4: "Épique", 5: "Légendaire", 6: "Secrète", 7: "Full Diamant" };
-  const rarityColors = { 1: "#888780", 2: "#378ADD", 3: "#1D9E75", 4: "#7F77DD", 5: "#EF9F27", 6: "gold", 7: "#00cfff" };
+  // FIX : rarity 6 en rouge
+  const rarityColors = { 1: "#888780", 2: "#378ADD", 3: "#1D9E75", 4: "#7F77DD", 5: "#EF9F27", 6: "#e02020", 7: "#00cfff" };
 
   let imgSrc = getCardImage(card);
   let data = collection[card.id];
@@ -1037,7 +1042,6 @@ function openCardModal(card) {
   modal.querySelector("#cardModalRarityLabel").style.color = rarityColors[card.rarity] || "white";
   modal.querySelector("#cardModalCopies").innerText = data ? "x" + data.copies + " exemplaire" + (data.copies > 1 ? "s" : "") : "";
 
-  // Badge shiny dans le modal
   let shinyBadgeEl = modal.querySelector("#cardModalShinyBadge");
   shinyBadgeEl.innerHTML = "";
   if (isShiny) {
@@ -1077,7 +1081,8 @@ function renderCollection() {
     { rarity: 3, label: "Rare",         color: "#1D9E75", icon: "⭐⭐⭐" },
     { rarity: 4, label: "Épique",       color: "#7F77DD", icon: "⭐⭐⭐⭐" },
     { rarity: 5, label: "Légendaire",   color: "#EF9F27", icon: "⭐⭐⭐⭐⭐" },
-    { rarity: 6, label: "Secrète",      color: "gold",    icon: "⭐⭐⭐⭐⭐⭐" },
+    // FIX : rarity 6 en rouge
+    { rarity: 6, label: "Secrète",      color: "#e02020", icon: "⭐⭐⭐⭐⭐⭐" },
     { rarity: 7, label: "Full Diamant", color: "#00cfff", icon: "💎" },
   ];
 
@@ -1128,7 +1133,6 @@ function renderCollection() {
 
   container.appendChild(progressBlock);
 
-  // Barre progression globale Shiny
   let totalCards = cardsDB.length;
   let totalShiny = Object.keys(shinyCollection).length;
   let shinyPctGlobal = Math.round((totalShiny / totalCards) * 100);
@@ -1153,6 +1157,8 @@ function renderCollection() {
     let isShiny = shinyCollection[card.id];
     let el = document.createElement("div");
 
+    // FIX : une carte est "débloquée" si elle est dans la collection OU si elle a une version shiny
+    // Même avec copies === 0, si shinyCollection la contient, on l'affiche
     if (!data && !isShiny) {
       el.className = "card card-locked";
       el.innerHTML = "<div class='lock-icon'>🔒</div>";
@@ -1179,10 +1185,9 @@ function renderCollection() {
       let text = document.createElement("p"); text.innerHTML = "<b>" + card.name + "</b>";
       let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
 
-      if (data) {
-        if (!data.copies) data.copies = 1;
-        let copies = document.createElement("p"); copies.innerText = "x" + data.copies;
+      if (data && data.copies > 0) {
         let cost = SHINY_COST[card.rarity];
+        let copies = document.createElement("p"); copies.innerText = "x" + data.copies;
 
         if (!isShiny && data.copies >= cost) {
           let craftBtn = document.createElement("button");
@@ -1204,11 +1209,20 @@ function renderCollection() {
           }
         }
       } else {
+        // copies === 0 ou pas de data : on affiche juste le nom et la rareté
+        // Si shiny, on affiche le badge MAX shiny
         el.appendChild(text); el.appendChild(rarity);
-        let maxLabel = document.createElement("p");
-        maxLabel.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
-        maxLabel.innerText = "✦ MAX";
-        el.appendChild(maxLabel);
+        if (isShiny) {
+          let maxLabel = document.createElement("p");
+          maxLabel.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
+          maxLabel.innerText = "✦ SHINY";
+          el.appendChild(maxLabel);
+        } else if (data && data.copies === 0) {
+          let zeroLabel = document.createElement("p");
+          zeroLabel.style.cssText = "color:rgba(255,255,255,0.3);font-size:10px;";
+          zeroLabel.innerText = "x0";
+          el.appendChild(zeroLabel);
+        }
       }
     }
     container.appendChild(el);
@@ -1217,6 +1231,7 @@ function renderCollection() {
 
 // =====================================================
 // SHINY COLLECTION RENDER
+// FIX : la fonction cherche bien "shinyList" — vérifier que ce div existe dans le HTML
 // =====================================================
 
 function renderShinyCollection() {
