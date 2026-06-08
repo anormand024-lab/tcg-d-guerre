@@ -164,62 +164,6 @@ let collection = JSON.parse(localStorage.getItem("collection")) || {};
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
 
 // =====================================================
-// SHINY SYSTEM
-// =====================================================
-
-const SHINY_COST = { 1: 30, 2: 20, 3: 13, 4: 7, 5: 5, 6: 3, 7: 2 };
-let shinyCollection = JSON.parse(localStorage.getItem("shinyCollection")) || {};
-
-function saveShinyCollection() {
-  localStorage.setItem("shinyCollection", JSON.stringify(shinyCollection));
-}
-
-function craftShiny(cardId) {
-  let card = cardsDB.find(c => c.id === cardId);
-  if (!card) return;
-  let cost = SHINY_COST[card.rarity];
-  let data = collection[card.id];
-
-  if (!data || data.copies < cost) {
-    alert("❌ Il te faut " + cost + " exemplaires de \"" + card.name + "\" pour créer sa version Shiny !\nTu en as : " + (data ? data.copies : 0));
-    return;
-  }
-  if (shinyCollection[cardId]) {
-    alert("✨ Tu possèdes déjà la version Shiny de cette carte !");
-    return;
-  }
-  let confirmed = confirm(
-    "✨ Créer la Shiny de \"" + card.name + "\" ?\n" +
-    "Coût : " + cost + " exemplaires\n" +
-    "Tu en as : " + data.copies + "\n\n" +
-    "⚠️ Ces exemplaires seront détruits !"
-  );
-  if (!confirmed) return;
-
-  data.copies = Math.max(0, data.copies - cost);
-
-  localStorage.setItem("collection", JSON.stringify(collection));
-
-  shinyCollection[cardId] = true;
-  saveShinyCollection();
-
-  playDiamond();
-  showShinyBanner(card);
-  renderCollection();
-  renderShinyCollection();
-}
-
-function showShinyBanner(card) {
-  let banner = document.createElement("div");
-  banner.className = "shiny-craft-banner";
-  banner.innerHTML = "✨ <b>SHINY CRAFTÉE !</b> \"" + card.name + "\" brille maintenant pour toujours !";
-  let target = document.getElementById("boosterResult");
-  if (target) target.before(banner);
-  else document.body.prepend(banner);
-  setTimeout(() => banner.remove(), 4000);
-}
-
-// =====================================================
 // PITY SYSTEM
 // =====================================================
 
@@ -1014,13 +958,11 @@ function openCardModal(card) {
 
   let imgSrc = getCardImage(card);
   let data = collection[card.id];
-  let isShiny = shinyCollection[card.id];
 
   let imgWrap = modal.querySelector("#cardModalImgWrap");
   imgWrap.innerHTML = "";
   imgWrap.className = "card-modal-img-wrap rarity-" + card.rarity;
   if (card.rarity === 6) imgWrap.classList.add("holo");
-  if (isShiny) imgWrap.classList.add("shiny-card");
 
   if (imgSrc) {
     let img = document.createElement("img"); img.src = imgSrc; img.className = "card-modal-img"; imgWrap.appendChild(img);
@@ -1039,16 +981,10 @@ function openCardModal(card) {
   let copiesText = "";
   if (data && data.copies > 0) {
     copiesText = "x" + data.copies + " exemplaire" + (data.copies > 1 ? "s" : "");
-  } else if (isShiny) {
-    copiesText = "x0 exemplaire (consommés pour le Shiny)";
   }
   modal.querySelector("#cardModalCopies").innerText = copiesText;
 
-  let shinyBadgeEl = modal.querySelector("#cardModalShinyBadge");
-  shinyBadgeEl.innerHTML = "";
-  if (isShiny) {
-    shinyBadgeEl.innerHTML = "<span class='shiny-modal-badge'>✦ SHINY</span>";
-  }
+  modal.querySelector("#cardModalShinyBadge").innerHTML = "";
 
   modal.classList.remove("hidden");
   setTimeout(() => modal.classList.add("visible"), 10);
@@ -1069,7 +1005,7 @@ function renderCollection() {
   container.innerHTML = "";
 
   let count = 0;
-  for (let c of cardsDB) { if (collection[c.id] || shinyCollection[c.id]) count++; }
+  for (let c of cardsDB) { if (collection[c.id]) count++; }
 
   let header = document.createElement("div");
   header.innerText = "📚 Collection : " + count + "/" + cardsDB.length;
@@ -1092,9 +1028,7 @@ function renderCollection() {
   rarityConfig.forEach(cfg => {
     let total = cardsDB.filter(c => c.rarity === cfg.rarity).length;
     let owned = cardsDB.filter(c => c.rarity === cfg.rarity && collection[c.id]).length;
-    let shinyOwned = cardsDB.filter(c => c.rarity === cfg.rarity && shinyCollection[c.id]).length;
     let pct = total > 0 ? Math.round((owned / total) * 100) : 0;
-    let shinyPct = total > 0 ? Math.round((shinyOwned / total) * 100) : 0;
 
     let row = document.createElement("div");
     row.style.cssText = "display:flex;flex-direction:column;gap:4px;";
@@ -1103,9 +1037,7 @@ function renderCollection() {
     labelRow.style.cssText = "display:flex;justify-content:space-between;align-items:center;font-size:12px;";
     labelRow.innerHTML =
       "<span style='color:" + cfg.color + ";font-weight:bold;'>" + cfg.icon + " " + cfg.label + "</span>" +
-      "<span style='color:rgba(255,255,255,0.6);'>" + owned + " / " + total +
-      (shinyOwned > 0 ? " <span style='color:#ffe066;font-size:10px;'>✨ " + shinyOwned + "✦</span>" : "") +
-      "</span>";
+      "<span style='color:rgba(255,255,255,0.6);'>" + owned + " / " + total + "</span>";
 
     let barBg = document.createElement("div");
     barBg.style.cssText = "width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;position:relative;";
@@ -1119,13 +1051,6 @@ function renderCollection() {
     }
 
     barBg.appendChild(barFill);
-
-    if (shinyOwned > 0) {
-      let shinyBarFill = document.createElement("div");
-      shinyBarFill.style.cssText = "position:absolute;top:0;left:0;height:100%;border-radius:99px;width:" + shinyPct + "%;background:linear-gradient(90deg,#ffe066,#fff,#ffe066);background-size:200% 100%;animation:shinyBarAnim 1.5s linear infinite;opacity:0.85;";
-      barBg.appendChild(shinyBarFill);
-    }
-
     row.appendChild(labelRow);
     row.appendChild(barBg);
     progressBlock.appendChild(row);
@@ -1133,29 +1058,13 @@ function renderCollection() {
 
   container.appendChild(progressBlock);
 
-  let totalCards = cardsDB.length;
-  let totalShiny = Object.keys(shinyCollection).length;
-  let shinyPctGlobal = Math.round((totalShiny / totalCards) * 100);
-
-  let shinyProgressBlock = document.createElement("div");
-  shinyProgressBlock.style.cssText = "margin-bottom:16px;padding:10px 14px;background:rgba(255,224,102,0.06);border-radius:14px;border:1px solid rgba(255,224,102,0.15);";
-  shinyProgressBlock.innerHTML =
-    "<div style='display:flex;justify-content:space-between;font-size:12px;font-weight:bold;margin-bottom:6px;'>" +
-    "<span style='color:#ffe066;'>✨ Shinys</span>" +
-    "<span style='color:rgba(255,255,255,0.6);'>" + totalShiny + " / " + totalCards + "</span></div>" +
-    "<div style='width:100%;height:7px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden;'>" +
-    "<div style='height:100%;width:" + shinyPctGlobal + "%;border-radius:99px;background:linear-gradient(90deg,#ffe066,#fff700,#fff,#ffe066);background-size:200% 100%;animation:shinyBarAnim 1.5s linear infinite;'></div></div>" +
-    "<div style='font-size:10px;color:rgba(255,255,255,0.35);text-align:right;margin-top:4px;'>" + shinyPctGlobal + "% complété</div>";
-  container.appendChild(shinyProgressBlock);
-
   let sep = document.createElement("hr");
   sep.style.cssText = "border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0 0 12px 0;";
   container.appendChild(sep);
 
   cardsDB.forEach(card => {
     let data = collection[card.id];
-    let isShiny = shinyCollection[card.id];
-    let unlocked = (data != null) || isShiny;
+    let unlocked = data != null;
 
     let el = document.createElement("div");
 
@@ -1165,7 +1074,6 @@ function renderCollection() {
     } else {
       el.className = "card rarity-" + card.rarity;
       if (card.rarity === 6) el.classList.add("holo");
-      if (isShiny) el.classList.add("shiny-card");
 
       el.style.cursor = "pointer";
       el.addEventListener("click", () => openCardModal(card));
@@ -1175,48 +1083,14 @@ function renderCollection() {
         let image = document.createElement("img"); image.src = imgSrc; el.appendChild(image);
       }
 
-      if (isShiny) {
-        let shinyBadge = document.createElement("div");
-        shinyBadge.className = "shiny-badge";
-        shinyBadge.innerText = "✦";
-        el.appendChild(shinyBadge);
-      }
-
       let text = document.createElement("p"); text.innerHTML = "<b>" + card.name + "</b>";
       let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
 
       let copies = data ? data.copies : 0;
-      let cost = SHINY_COST[card.rarity];
-
       if (copies > 0) {
         let copiesEl = document.createElement("p"); copiesEl.innerText = "x" + copies;
-
-        if (!isShiny && copies >= cost) {
-          let craftBtn = document.createElement("button");
-          craftBtn.className = "craft-shiny-btn";
-          craftBtn.innerText = "✨ Shiny (" + cost + ")";
-          craftBtn.addEventListener("click", (e) => { e.stopPropagation(); craftShiny(card.id); });
-          el.appendChild(text); el.appendChild(rarity); el.appendChild(copiesEl); el.appendChild(craftBtn);
-        } else {
-          el.appendChild(text); el.appendChild(rarity); el.appendChild(copiesEl);
-          if (!isShiny) {
-            let prog = document.createElement("div");
-            prog.className = "craft-progress-bar";
-            let pct = Math.min(100, Math.round((copies / cost) * 100));
-            prog.innerHTML = "<div class='craft-progress-fill' style='width:" + pct + "%'></div>";
-            let progLabel = document.createElement("div");
-            progLabel.className = "craft-progress-label";
-            progLabel.innerText = copies + "/" + cost;
-            el.appendChild(prog); el.appendChild(progLabel);
-          }
-        }
+        el.appendChild(text); el.appendChild(rarity); el.appendChild(copiesEl);
       } else {
-        // =====================================================
-        // BUG FIX : copies = 0 après craft shiny
-        // Si la carte n'a pas d'image, on ajoute un placeholder
-        // visible pour que la carte ait une hauteur et ne soit
-        // pas invisible dans la grille de collection.
-        // =====================================================
         if (!imgSrc) {
           let placeholder = document.createElement("div");
           placeholder.className = "card-no-img-placeholder";
@@ -1226,84 +1100,14 @@ function renderCollection() {
 
         el.appendChild(text); el.appendChild(rarity);
 
-        if (isShiny) {
-          let maxLabel = document.createElement("p");
-          maxLabel.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
-          maxLabel.innerText = "✦ SHINY";
-          el.appendChild(maxLabel);
-        } else {
-          let zeroLabel = document.createElement("p");
-          zeroLabel.style.cssText = "color:rgba(255,255,255,0.3);font-size:10px;";
-          zeroLabel.innerText = "x0";
-          el.appendChild(zeroLabel);
-        }
+        let zeroLabel = document.createElement("p");
+        zeroLabel.style.cssText = "color:rgba(255,255,255,0.3);font-size:10px;";
+        zeroLabel.innerText = "x0";
+        el.appendChild(zeroLabel);
       }
     }
     container.appendChild(el);
   });
-}
-
-// =====================================================
-// SHINY COLLECTION RENDER
-// =====================================================
-
-function renderShinyCollection() {
-  let container = document.getElementById("shinyList");
-  if (!container) return;
-  container.innerHTML = "";
-
-  let shinys = cardsDB.filter(c => shinyCollection[c.id]);
-
-  let header = document.createElement("div");
-  header.style.cssText = "text-align:center;font-size:18px;font-weight:bold;margin-bottom:16px;";
-  header.innerHTML = "✨ Shinys : <span style='color:#ffe066'>" + shinys.length + "</span> / " + cardsDB.length;
-  container.appendChild(header);
-
-  if (shinys.length === 0) {
-    let empty = document.createElement("div");
-    empty.style.cssText = "text-align:center;opacity:0.4;font-size:14px;margin-top:40px;line-height:2.2;";
-    empty.innerHTML = "✨<br>Aucune carte Shiny encore...<br><small>Collecte des doublons et forge-les !</small>";
-    container.appendChild(empty);
-    return;
-  }
-
-  let grid = document.createElement("div");
-  grid.className = "cards-grid";
-
-  shinys.forEach(card => {
-    let el = document.createElement("div");
-    el.className = "card rarity-" + card.rarity + " shiny-card";
-    if (card.rarity === 6) el.classList.add("holo");
-    el.style.cursor = "pointer";
-    el.addEventListener("click", () => openCardModal(card));
-
-    let imgSrc = getCardImage(card);
-    if (imgSrc) {
-      let img = document.createElement("img"); img.src = imgSrc; el.appendChild(img);
-    } else {
-      // BUG FIX : placeholder visible dans l'onglet Shinys aussi
-      let placeholder = document.createElement("div");
-      placeholder.className = "card-no-img-placeholder";
-      placeholder.innerText = "🂠";
-      el.appendChild(placeholder);
-    }
-
-    let shinyBadge = document.createElement("div");
-    shinyBadge.className = "shiny-badge";
-    shinyBadge.innerText = "✦";
-    el.appendChild(shinyBadge);
-
-    let name = document.createElement("p"); name.innerHTML = "<b>" + card.name + "</b>";
-    let stars = document.createElement("p"); stars.innerText = starsDisplay(card.rarity);
-    let maxed = document.createElement("p");
-    maxed.style.cssText = "color:#ffe066;font-size:10px;font-weight:bold;";
-    maxed.innerText = "✦ SHINY MAX";
-
-    el.appendChild(name); el.appendChild(stars); el.appendChild(maxed);
-    grid.appendChild(el);
-  });
-
-  container.appendChild(grid);
 }
 
 // =====================================================
@@ -1314,14 +1118,11 @@ function resetCollection() {
   let confirmed = confirm("⚠️ Es-tu sûr de vouloir réinitialiser toute ta collection ? Cette action est irréversible !");
   if (!confirmed) return;
   collection = {};
-  shinyCollection = {};
   pityCounter = 0;
   localStorage.removeItem("collection");
-  localStorage.removeItem("shinyCollection");
   localStorage.removeItem("pityCounter");
   savePity();
   renderCollection();
-  renderShinyCollection();
   updatePityDisplay();
   document.getElementById("boosterResult").innerHTML = "";
   alert("✅ Collection réinitialisée !");
@@ -1374,28 +1175,11 @@ function uploadImage() {
 // MIGRATION
 // =====================================================
 
-function migrateShinyData() {
-  let migrated = false;
-  Object.keys(shinyCollection).forEach(idStr => {
-    let id = Number(idStr);
-    if (!collection[id]) {
-      collection[id] = { discovered: true, copies: 0 };
-      migrated = true;
-    }
-  });
-  if (migrated) {
-    localStorage.setItem("collection", JSON.stringify(collection));
-    console.log("[Migration] Cartes shiny orphelines réparées dans collection[]");
-  }
-}
-
 // =====================================================
 // INIT
 // =====================================================
 
-migrateShinyData();
 renderCollection();
-renderShinyCollection();
 startCooldown();
 updateMusicBtn();
 updatePityDisplay();

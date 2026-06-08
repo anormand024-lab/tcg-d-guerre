@@ -14,7 +14,6 @@
     <nav class="nav">
       <button onclick="showTab('booster')">🎁 Booster</button>
       <button onclick="showTab('collection')">📚 Collection</button>
-      <button onclick="showTab('shiny'); renderShinyCollection()">✨ Shinys</button>
       <button onclick="showTab('admin')">⚙️ Admin</button>
     </nav>
     <main>
@@ -33,11 +32,6 @@
         <div class="panel">
           <h2>Collection</h2>
           <div id="collectionList" class="cards-grid"></div>
-        </div>
-      </section>
-      <section id="shiny" class="tab">
-        <div class="panel">
-          <div id="shinyList"></div>
         </div>
       </section>
       <section id="admin" class="tab">
