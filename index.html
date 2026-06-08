@@ -8,12 +8,16 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <h1>TCG Pocket</h1>
+      <div class="topbar-left">
+        <h1>TCG Pocket</h1>
+        <div id="crystalDisplay" class="resource-display">💎 0 cristaux</div>
+      </div>
       <button id="musicToggleBtn" onclick="toggleMusic()">🔇 Musique OFF</button>
     </header>
     <nav class="nav">
       <button onclick="showTab('booster')">🎁 Booster</button>
       <button onclick="showTab('collection')">📚 Collection</button>
+      <button onclick="showTab('shop'); renderShop()">💎 Boutique</button>
       <button onclick="showTab('admin')">⚙️ Admin</button>
     </nav>
     <main>
@@ -32,6 +36,13 @@
         <div class="panel">
           <h2>Collection</h2>
           <div id="collectionList" class="cards-grid"></div>
+        </div>
+      </section>
+      <section id="shop" class="tab">
+        <div class="panel">
+          <h2>Boutique de cristaux</h2>
+          <div id="shopInfo" class="shop-info"></div>
+          <div id="shopList" class="cards-grid"></div>
         </div>
       </section>
       <section id="admin" class="tab">

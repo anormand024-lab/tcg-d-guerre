@@ -161,7 +161,116 @@ let dropRates = [
 // =====================================================
 
 let collection = JSON.parse(localStorage.getItem("collection")) || {};
+let crystals = Number(localStorage.getItem("crystals")) || 0;
 let lastBoosterOpen = Number(localStorage.getItem("lastBoosterOpen")) || 0;
+
+const CRYSTAL_YIELD = { 1: 6, 2: 12, 3: 24, 4: 50, 5: 90, 6: 160, 7: 260 };
+const BOOSTER_CRYSTAL_COST = 140;
+const CRYSTALLIZE_COST = { 1: 35, 2: 75, 3: 140, 4: 240, 5: 420, 6: 700, 7: 1200 };
+const SHOP_CARD_COST = { 1: 30, 2: 70, 3: 140, 4: 260, 5: 480, 6: 880, 7: 1600 };
+
+function saveCrystals() {
+  localStorage.setItem("crystals", crystals);
+}
+
+function updateCrystalDisplay() {
+  let el = document.getElementById("crystalDisplay");
+  if (!el) return;
+  el.innerText = "💎 " + crystals + " cristal" + (crystals > 1 ? "s" : "");
+}
+
+function addCrystals(amount) {
+  crystals = Math.max(0, crystals + amount);
+  saveCrystals();
+  updateCrystalDisplay();
+}
+
+function spendCrystals(amount) {
+  if (amount > crystals) return false;
+  crystals -= amount;
+  saveCrystals();
+  updateCrystalDisplay();
+  return true;
+}
+
+function getDuplicateCount(cardId) {
+  let data = collection[cardId];
+  return data ? Math.max(0, (data.copies || 0) - 1) : 0;
+}
+
+function recycleDuplicates(cardId) {
+  let card = cardsDB.find(c => c.id === cardId);
+  let data = collection[cardId];
+  if (!card || !data || (data.copies || 0) <= 1) {
+    alert("Aucun doublon à recycler pour cette carte.");
+    return;
+  }
+  let duplicates = Math.max(0, (data.copies || 0) - 1);
+  let reward = CRYSTAL_YIELD[card.rarity] * duplicates;
+  data.copies = 1;
+  localStorage.setItem("collection", JSON.stringify(collection));
+  addCrystals(reward);
+  renderCollection();
+  alert("✅ Tu as recyclé " + duplicates + " doublon" + (duplicates > 1 ? "s" : "") + " pour " + reward + " cristaux.");
+}
+
+function getCardCrystalCost(card) {
+  return CRYSTALLIZE_COST[card.rarity] || 0;
+}
+
+function crystalizeCard(cardId) {
+  let card = cardsDB.find(c => c.id === cardId);
+  let data = collection[cardId];
+  if (!card || !data) {
+    alert("Tu dois posséder la carte pour la cristalliser.");
+    return;
+  }
+  if (data.crystalized) {
+    alert("Cette carte est déjà cristallisée.");
+    return;
+  }
+  let cost = getCardCrystalCost(card);
+  if (!spendCrystals(cost)) {
+    alert("Pas assez de cristaux. Il te faut " + cost + " cristaux.");
+    return;
+  }
+  data.crystalized = true;
+  localStorage.setItem("collection", JSON.stringify(collection));
+  renderCollection();
+  openCardModal(card);
+  alert("✨ La carte \"" + card.name + "\" est maintenant cristallisée !");
+}
+
+function buyBoosterWithCrystals() {
+  if (!spendCrystals(BOOSTER_CRYSTAL_COST)) {
+    alert("Pas assez de cristaux pour acheter un booster.");
+    return;
+  }
+  let pack = generatePack(6);
+  saveCollection(pack);
+  renderBooster(pack);
+  renderCollection();
+  alert("🎁 Booster acheté avec des cristaux !");
+}
+
+function buyCardFromShop(cardId) {
+  let card = cardsDB.find(c => c.id === cardId);
+  let data = collection[cardId];
+  if (!card || data) {
+    alert("Tu possèdes déjà cette carte.");
+    return;
+  }
+  let cost = SHOP_CARD_COST[card.rarity] || 0;
+  if (!spendCrystals(cost)) {
+    alert("Pas assez de cristaux pour acheter cette carte.");
+    return;
+  }
+  collection[cardId] = { discovered: true, copies: 1, crystalized: false };
+  localStorage.setItem("collection", JSON.stringify(collection));
+  renderCollection();
+  renderShop();
+  alert("✅ Carte achetée : " + card.name + " !");
+}
 
 // =====================================================
 // PITY SYSTEM
@@ -943,7 +1052,7 @@ function openCardModal(card) {
           <div class="card-modal-stars" id="cardModalStars"></div>
           <div class="card-modal-rarity-label" id="cardModalRarityLabel"></div>
           <div class="card-modal-copies" id="cardModalCopies"></div>
-          <div class="card-modal-shiny-badge" id="cardModalShinyBadge"></div>
+          <div class="card-modal-actions" id="cardModalActions"></div>
         </div>
       </div>
     `;
@@ -979,12 +1088,28 @@ function openCardModal(card) {
   modal.querySelector("#cardModalRarityLabel").style.color = rarityColors[card.rarity] || "white";
 
   let copiesText = "";
-  if (data && data.copies > 0) {
-    copiesText = "x" + data.copies + " exemplaire" + (data.copies > 1 ? "s" : "");
+  let actionsHtml = "";
+  if (data) {
+    copiesText = "x" + (data.copies || 0) + " exemplaire" + ((data.copies || 0) > 1 ? "s" : "");
+    let duplicates = Math.max(0, (data.copies || 0) - 1);
+    if (duplicates > 0) {
+      actionsHtml += "<button class='action-btn recycle-btn' onclick='recycleDuplicates(" + card.id + ")'>Recycler " + duplicates + " doublon" + (duplicates > 1 ? "s" : "") + "</button>";
+    }
+    if (data.crystalized) {
+      actionsHtml += "<div class='crystal-status'>✨ Cristallisée</div>";
+    } else {
+      let crystalCost = getCardCrystalCost(card);
+      actionsHtml += "<button class='action-btn crystalize-btn' onclick='crystalizeCard(" + card.id + ")'>Cristalliser (" + crystalCost + " cristaux)</button>";
+    }
   }
   modal.querySelector("#cardModalCopies").innerText = copiesText;
+  modal.querySelector("#cardModalActions").innerHTML = actionsHtml;
 
-  modal.querySelector("#cardModalShinyBadge").innerHTML = "";
+  if (data && data.crystalized) {
+    imgWrap.classList.add("crystal-card");
+  } else {
+    imgWrap.classList.remove("crystal-card");
+  }
 
   modal.classList.remove("hidden");
   setTimeout(() => modal.classList.add("visible"), 10);
@@ -1074,6 +1199,7 @@ function renderCollection() {
     } else {
       el.className = "card rarity-" + card.rarity;
       if (card.rarity === 6) el.classList.add("holo");
+      if (data && data.crystalized) el.classList.add("crystal-card");
 
       el.style.cursor = "pointer";
       el.addEventListener("click", () => openCardModal(card));
@@ -1086,10 +1212,16 @@ function renderCollection() {
       let text = document.createElement("p"); text.innerHTML = "<b>" + card.name + "</b>";
       let rarity = document.createElement("p"); rarity.innerText = starsDisplay(card.rarity);
 
-      let copies = data ? data.copies : 0;
+      let copies = data ? (data.copies || 0) : 0;
       if (copies > 0) {
         let copiesEl = document.createElement("p"); copiesEl.innerText = "x" + copies;
         el.appendChild(text); el.appendChild(rarity); el.appendChild(copiesEl);
+        if (data && data.crystalized) {
+          let badge = document.createElement("div");
+          badge.className = "crystal-badge";
+          badge.innerText = "✨ Cristallisée";
+          el.appendChild(badge);
+        }
       } else {
         if (!imgSrc) {
           let placeholder = document.createElement("div");
@@ -1125,7 +1257,75 @@ function resetCollection() {
   renderCollection();
   updatePityDisplay();
   document.getElementById("boosterResult").innerHTML = "";
+  crystals = 0;
+  localStorage.removeItem("crystals");
+  updateCrystalDisplay();
   alert("✅ Collection réinitialisée !");
+}
+
+// =====================================================
+// SHOP
+
+function renderShop() {
+  let shopInfo = document.getElementById("shopInfo");
+  let shopList = document.getElementById("shopList");
+  if (!shopInfo || !shopList) return;
+
+  shopInfo.innerHTML = "";
+  shopList.innerHTML = "";
+
+  let description = document.createElement("div");
+  description.className = "shop-description";
+  description.innerHTML =
+    "<p>Utilise tes cristaux pour acheter des boosters ou des cartes manquantes.</p>" +
+    "<p>Plus la rareté est haute, plus le coût est élevé.</p>";
+  shopInfo.appendChild(description);
+
+  let buyBoosterBtn = document.createElement("button");
+  buyBoosterBtn.className = "primary-btn";
+  buyBoosterBtn.innerText = "Acheter un booster (" + BOOSTER_CRYSTAL_COST + " cristaux)";
+  buyBoosterBtn.addEventListener("click", buyBoosterWithCrystals);
+  shopInfo.appendChild(buyBoosterBtn);
+
+  let missingCards = cardsDB.filter(c => !collection[c.id]).sort((a, b) => a.rarity - b.rarity || a.name.localeCompare(b.name));
+  if (missingCards.length === 0) {
+    let empty = document.createElement("div");
+    empty.className = "shop-empty";
+    empty.innerText = "Tu possèdes déjà toutes les cartes !";
+    shopList.appendChild(empty);
+    return;
+  }
+
+  missingCards.forEach(card => {
+    let cost = SHOP_CARD_COST[card.rarity] || 0;
+    let el = document.createElement("div");
+    el.className = "card rarity-" + card.rarity;
+    if (card.rarity === 6) el.classList.add("holo");
+
+    let imgSrc = getCardImage(card);
+    if (imgSrc) {
+      let image = document.createElement("img"); image.src = imgSrc; el.appendChild(image);
+    } else {
+      let placeholder = document.createElement("div");
+      placeholder.className = "card-no-img-placeholder";
+      placeholder.innerText = "🂠";
+      el.appendChild(placeholder);
+    }
+
+    let title = document.createElement("p"); title.innerHTML = "<b>" + card.name + "</b>";
+    let rarityText = document.createElement("p"); rarityText.innerText = starsDisplay(card.rarity);
+    let price = document.createElement("p"); price.innerText = "Prix : " + cost + " cristaux";
+    let buyBtn = document.createElement("button");
+    buyBtn.className = "buy-card-btn";
+    buyBtn.innerText = "Acheter";
+    buyBtn.addEventListener("click", () => buyCardFromShop(card.id));
+
+    el.appendChild(title);
+    el.appendChild(rarityText);
+    el.appendChild(price);
+    el.appendChild(buyBtn);
+    shopList.appendChild(el);
+  });
 }
 
 // =====================================================
@@ -1180,6 +1380,8 @@ function uploadImage() {
 // =====================================================
 
 renderCollection();
+renderShop();
+updateCrystalDisplay();
 startCooldown();
 updateMusicBtn();
 updatePityDisplay();

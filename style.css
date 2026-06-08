@@ -1393,6 +1393,128 @@ body {
   min-height: 80px;
 }
 
+.resource-display {
+  margin-top: 12px;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.card-modal-actions .action-btn {
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+  font-size: 13px;
+}
+
+.card-modal-actions .action-btn:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+.card-modal-actions .recycle-btn {
+  background: rgba(68, 199, 255, 0.14);
+}
+
+.card-modal-actions .crystalize-btn {
+  background: rgba(255, 210, 80, 0.15);
+}
+
+.card-modal-actions .crystal-status {
+  color: #ffe066;
+  font-weight: bold;
+  padding: 10px 12px;
+  background: rgba(255,224,102,0.1);
+  border-radius: 12px;
+}
+
+.crystal-card {
+  border: 1px solid rgba(90, 205, 255, 0.35);
+  box-shadow: 0 0 24px rgba(90, 205, 255, 0.15);
+}
+
+.crystal-card::after {
+  content: "✨";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  color: #b8f5ff;
+}
+
+.crystal-badge {
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,224,102,0.12);
+  color: #ffe066;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.shop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.shop-description {
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.buy-card-btn,
+.primary-btn {
+  cursor: pointer;
+  border: none;
+  color: white;
+  background: #4b8bff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.buy-card-btn:hover,
+.primary-btn:hover {
+  background: #5ea0ff;
+  transform: translateY(-1px);
+}
+
+.shop-empty {
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  width: 100%;
+  padding: 24px 16px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 16px;
+}
+
 /* ===================================================== */
 /* END FILE */
 /* ===================================================== */
